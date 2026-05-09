@@ -244,16 +244,18 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, forceFull
     const handleTimeUpdate = () => {
       setCurrentTime(video.currentTime)
 
-      if (Math.floor(video.currentTime) % 5 === 0 && Math.floor(video.currentTime) !== Math.floor(currentTime)) {
+      // Guardar cada 3 segundos de reproducción
+      if (Math.floor(video.currentTime) % 3 === 0 && Math.floor(video.currentTime) !== Math.floor(currentTime)) {
         saveProgress(video.currentTime)
       }
 
+      // Guardar también con un timeout corto para cambios lentos
       if (progressSaveTimeoutRef.current) {
         clearTimeout(progressSaveTimeoutRef.current)
       }
       progressSaveTimeoutRef.current = setTimeout(() => {
         saveProgress(video.currentTime)
-      }, 500) // Reducido de 1000ms a 500ms
+      }, 300) // Reducido a 300ms para más frecuente guardado
     }
 
     const handleDurationChange = () => {
