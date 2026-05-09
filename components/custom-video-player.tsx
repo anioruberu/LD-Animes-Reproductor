@@ -399,11 +399,24 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize =
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement)
+      const isFS = !!(document.fullscreenElement || 
+                     (document as any).webkitFullscreenElement || 
+                     (document as any).mozFullScreenElement || 
+                     (document as any).msFullscreenElement)
+      setIsFullscreen(isFS)
     }
 
     document.addEventListener("fullscreenchange", handleFullscreenChange)
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange)
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange)
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange)
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange)
+    
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange)
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange)
+      document.removeEventListener("mozfullscreenchange", handleFullscreenChange)
+      document.removeEventListener("MSFullscreenChange", handleFullscreenChange)
+    }
   }, [])
 
   const togglePlay = () => {
