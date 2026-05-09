@@ -881,7 +881,7 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, forceFull
             </div>
 
             <div className={`flex items-center ${isMobile ? "space-x-1" : "space-x-2"}`}>
-              {!isInIframe && (
+              {(!isInIframe || isFullscreen) && (
                 <Button
                   variant="ghost"
                   size="sm"
