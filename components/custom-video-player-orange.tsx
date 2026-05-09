@@ -247,7 +247,24 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, forceFull
 
       // Guardar cada 5 segundos de diferencia respecto al último guardado
       if (Math.abs(video.currentTime - lastSavedTimeRef.current) >= 5) {
-        saveProgress(video.currentTime)
+        // Guardar directamente sin depender del closure de saveProgress
+        const time = video.currentTime
+        const dur = video.duration
+        if (time > 10 && dur > 0 && time < dur - 10) {
+          const videoKey = getVideoKey()
+          const progressData = {
+            currentTime: time,
+            duration: dur,
+            timestamp: Date.now(),
+            title: title || "",
+            src: src,
+            uniqueId: btoa(`${title}_${src}`)
+              .replace(/[^a-zA-Z0-9]/g, "")
+              .substring(0, 20),
+          }
+          localStorage.setItem(videoKey, JSON.stringify(progressData))
+          console.log("[v0] Progreso guardado automáticamente:", progressData)
+        }
         lastSavedTimeRef.current = video.currentTime
       }
     }
