@@ -881,7 +881,7 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize =
             </div>
 
             <div className={`flex items-center ${isMobile ? "space-x-1" : "space-x-2"}`}>
-              {isFullscreen && (
+              {!isInIframe && (
                 <Button
                   variant="ghost"
                   size="sm"
