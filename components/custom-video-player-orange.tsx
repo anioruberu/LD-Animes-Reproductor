@@ -55,6 +55,7 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, forceFull
   }
 
   const saveProgress = (time: number) => {
+    console.log("[v0] saveProgress called - time:", time, "duration:", duration, "condition check:", time > 10 && duration > 0 && time < duration - 10)
     if (time > 10 && duration > 0 && time < duration - 10) {
       const videoKey = getVideoKey()
       const progressData = {
@@ -67,6 +68,7 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, forceFull
           .replace(/[^a-zA-Z0-9]/g, "")
           .substring(0, 20),
       }
+      console.log("[v0] Progress saved:", progressData)
       localStorage.setItem(videoKey, JSON.stringify(progressData))
     }
   }
