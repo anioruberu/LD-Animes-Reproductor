@@ -42,6 +42,7 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, forceFull
   const tapTimeoutRef = useRef<NodeJS.Timeout>()
   const skipIconTimeoutRef = useRef<NodeJS.Timeout>()
   const progressSaveTimeoutRef = useRef<NodeJS.Timeout>()
+  const lastSavedTimeRef = useRef<number>(0)
 
   const getVideoKey = () => {
     const videoIdentifier = `${title || "untitled"}_${src.split("/").pop() || src}`
@@ -244,18 +245,11 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, forceFull
     const handleTimeUpdate = () => {
       setCurrentTime(video.currentTime)
 
-      // Guardar cada 3 segundos de reproducción
-      if (Math.floor(video.currentTime) % 3 === 0 && Math.floor(video.currentTime) !== Math.floor(currentTime)) {
+      // Guardar cada 5 segundos de diferencia respecto al último guardado
+      if (Math.abs(video.currentTime - lastSavedTimeRef.current) >= 5) {
         saveProgress(video.currentTime)
+        lastSavedTimeRef.current = video.currentTime
       }
-
-      // Guardar también con un timeout corto para cambios lentos
-      if (progressSaveTimeoutRef.current) {
-        clearTimeout(progressSaveTimeoutRef.current)
-      }
-      progressSaveTimeoutRef.current = setTimeout(() => {
-        saveProgress(video.currentTime)
-      }, 300) // Reducido a 300ms para más frecuente guardado
     }
 
     const handleDurationChange = () => {
