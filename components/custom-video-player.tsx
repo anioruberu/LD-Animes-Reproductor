@@ -244,29 +244,6 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize =
 
     const handleTimeUpdate = () => {
       setCurrentTime(video.currentTime)
-
-      // Guardar cada 5 segundos de diferencia respecto al último guardado
-      if (Math.abs(video.currentTime - lastSavedTimeRef.current) >= 5) {
-        // Guardar directamente sin depender del closure de saveProgress
-        const time = video.currentTime
-        const dur = video.duration
-        if (time > 10 && dur > 0 && time < dur - 10) {
-          const videoKey = getVideoKey()
-          const progressData = {
-            currentTime: time,
-            duration: dur,
-            timestamp: Date.now(),
-            title: title || "",
-            src: src,
-            uniqueId: btoa(`${title}_${src}`)
-              .replace(/[^a-zA-Z0-9]/g, "")
-              .substring(0, 20),
-          }
-          localStorage.setItem(videoKey, JSON.stringify(progressData))
-          console.log("[v0] Progreso guardado automáticamente:", progressData)
-        }
-        lastSavedTimeRef.current = video.currentTime
-      }
     }
 
     const handleDurationChange = () => {
@@ -370,6 +347,37 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize =
       }
     }
   }, [src, onLoad, onError])
+
+  // Intervalo para guardar progreso automáticamente cada segundo mientras se reproduce
+  useEffect(() => {
+    if (!isPlaying || !videoRef.current) return
+
+    const interval = setInterval(() => {
+      const video = videoRef.current
+      if (!video) return
+
+      const time = video.currentTime
+      const dur = video.duration
+
+      // Guardar el progreso si cumple las condiciones
+      if (time > 10 && dur > 0 && time < dur - 10) {
+        const videoKey = getVideoKey()
+        const progressData = {
+          currentTime: time,
+          duration: dur,
+          timestamp: Date.now(),
+          title: title || "",
+          src: src,
+          uniqueId: btoa(`${title}_${src}`)
+            .replace(/[^a-zA-Z0-9]/g, "")
+            .substring(0, 20),
+        }
+        localStorage.setItem(videoKey, JSON.stringify(progressData))
+      }
+    }, 1000) // Guardar cada 1 segundo
+
+    return () => clearInterval(interval)
+  }, [isPlaying, src, title])
 
   useEffect(() => {
     const handleBeforeUnload = () => {
