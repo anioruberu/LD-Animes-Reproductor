@@ -36,6 +36,7 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, forceFull
   const [showSkipIcon, setShowSkipIcon] = useState<"forward" | "backward" | null>(null)
   const [buffered, setBuffered] = useState(0)
   const [isFillScreen, setIsFillScreen] = useState(false)
+  const [subtitlesUrl, setSubtitlesUrl] = useState<string | null>(null)
 
   const controlsTimeoutRef = useRef<NodeJS.Timeout>()
   const lastTapRef = useRef<number>(0)
@@ -427,6 +428,33 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, forceFull
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange)
   }, [])
 
+  // Cargar automáticamente subtítulos si existen
+  useEffect(() => {
+    if (!src) return
+
+    const loadSubtitles = async () => {
+      try {
+        // Reemplazar la extensión del archivo por .srt
+        const subtitleUrl = src.replace(/\.[^.]+$/, '.srt')
+        
+        // Intentar hacer un HEAD request para verificar si el archivo existe
+        const response = await fetch(subtitleUrl, { method: 'HEAD' })
+        
+        if (response.ok) {
+          setSubtitlesUrl(subtitleUrl)
+          console.log("[v0] Subtítulos encontrados automáticamente:", subtitleUrl)
+        } else {
+          setSubtitlesUrl(null)
+        }
+      } catch (error) {
+        // Si hay error, significa que el archivo de subtítulos no existe
+        setSubtitlesUrl(null)
+      }
+    }
+
+    loadSubtitles()
+  }, [src])
+  
   const togglePlay = () => {
     const video = videoRef.current
     if (!video) return
@@ -740,7 +768,11 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, forceFull
         crossOrigin="anonymous"
         playsInline
         controls={false}
-      />
+      >
+        {subtitlesUrl && (
+          <track kind="subtitles" src={subtitlesUrl} srcLang="es" label="Español" default />
+        )}
+      </video>
 
       {showControls && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
