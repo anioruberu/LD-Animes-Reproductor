@@ -36,6 +36,7 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize =
   const [showSkipIcon, setShowSkipIcon] = useState<"forward" | "backward" | null>(null)
   const [buffered, setBuffered] = useState(0)
   const [isFillScreen, setIsFillScreen] = useState(false)
+  const [subtitlesUrl, setSubtitlesUrl] = useState<string | null>(null)
 
   const controlsTimeoutRef = useRef<NodeJS.Timeout>()
   const lastTapRef = useRef<number>(0)
@@ -436,10 +437,37 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize =
       document.removeEventListener("fullscreenchange", handleFullscreenChange)
       document.removeEventListener("webkitfullscreenchange", handleFullscreenChange)
       document.removeEventListener("mozfullscreenchange", handleFullscreenChange)
-      document.removeEventListener("MSFullscreenChange", handleFullscreenChange)
+    document.removeEventListener("MSFullscreenChange", handleFullscreenChange)
     }
-  }, [])
+    }, [])
 
+  // Cargar automáticamente subtítulos si existen
+  useEffect(() => {
+    if (!src) return
+
+    const loadSubtitles = async () => {
+      try {
+        // Reemplazar la extensión del archivo por .srt
+        const subtitleUrl = src.replace(/\.[^.]+$/, '.srt')
+        
+        // Intentar hacer un HEAD request para verificar si el archivo existe
+        const response = await fetch(subtitleUrl, { method: 'HEAD' })
+        
+        if (response.ok) {
+          setSubtitlesUrl(subtitleUrl)
+          console.log("[v0] Subtítulos encontrados automáticamente:", subtitleUrl)
+        } else {
+          setSubtitlesUrl(null)
+        }
+      } catch (error) {
+        // Si hay error, significa que el archivo de subtítulos no existe
+        setSubtitlesUrl(null)
+      }
+    }
+
+    loadSubtitles()
+  }, [src])
+  
   const togglePlay = () => {
     const video = videoRef.current
     if (!video) return
@@ -753,7 +781,11 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize =
         crossOrigin="anonymous"
         playsInline
         controls={false}
-      />
+      >
+        {subtitlesUrl && (
+          <track kind="subtitles" src={subtitlesUrl} srcLang="es" label="Español" default />
+        )}
+      </video>
 
       {showControls && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
