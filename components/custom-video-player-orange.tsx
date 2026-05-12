@@ -436,18 +436,25 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, forceFull
       try {
         // Reemplazar la extensión del archivo por .srt
         const subtitleUrl = src.replace(/\.[^.]+$/, '.srt')
+        console.log("[v0] Intentando cargar subtítulos desde:", subtitleUrl)
         
-        // Intentar hacer un HEAD request para verificar si el archivo existe
-        const response = await fetch(subtitleUrl, { method: 'HEAD' })
+        // Intentar hacer un GET request para verificar si el archivo existe
+        const response = await fetch(subtitleUrl, { 
+          method: 'GET',
+          credentials: 'same-origin',
+          mode: 'cors'
+        })
         
         if (response.ok) {
           setSubtitlesUrl(subtitleUrl)
-          console.log("[v0] Subtítulos encontrados automáticamente:", subtitleUrl)
+          console.log("[v0] Subtítulos encontrados y cargados:", subtitleUrl)
         } else {
+          console.log("[v0] Subtítulos no encontrados. Status:", response.status)
           setSubtitlesUrl(null)
         }
       } catch (error) {
         // Si hay error, significa que el archivo de subtítulos no existe
+        console.log("[v0] Error al cargar subtítulos:", error)
         setSubtitlesUrl(null)
       }
     }
