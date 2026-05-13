@@ -847,8 +847,27 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, forceFull
 
       {/* Subtítulos renderizados */}
       {currentSubtitle && (
-        <div className="absolute bottom-20 left-0 right-0 flex justify-center px-4 pointer-events-none">
-          <div className="bg-black/80 text-white px-4 py-2 rounded text-center max-w-2xl text-sm md:text-base leading-relaxed whitespace-pre-wrap">
+        <div className="absolute bottom-16 left-0 right-0 flex justify-center px-4 pointer-events-none z-40">
+          <style>{`
+            .subtitle-text {
+              font-family: 'Arial', 'Trebuchet MS', sans-serif;
+              color: white;
+              text-shadow: 
+                -2px -2px 0 black,
+                2px -2px 0 black,
+                -2px 2px 0 black,
+                2px 2px 0 black,
+                -2px 0 0 black,
+                2px 0 0 black,
+                0 -2px 0 black,
+                0 2px 0 black;
+              font-weight: 600;
+              font-size: clamp(0.875rem, 2vw, 1.5rem);
+              line-height: 1.5;
+              text-align: center;
+            }
+          `}</style>
+          <div className="subtitle-text max-w-4xl whitespace-pre-wrap">
             {currentSubtitle}
           </div>
         </div>
