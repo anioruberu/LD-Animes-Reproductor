@@ -37,6 +37,8 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize =
   const [buffered, setBuffered] = useState(0)
   const [isFillScreen, setIsFillScreen] = useState(false)
   const [subtitlesUrl, setSubtitlesUrl] = useState<string | null>(null)
+  const [subtitles, setSubtitles] = useState<Array<{ start: number; end: number; text: string }>>([])
+  const [currentSubtitle, setCurrentSubtitle] = useState<string | null>(null)
 
   const controlsTimeoutRef = useRef<NodeJS.Timeout>()
   const lastTapRef = useRef<number>(0)
@@ -44,6 +46,49 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize =
   const skipIconTimeoutRef = useRef<NodeJS.Timeout>()
   const progressSaveTimeoutRef = useRef<NodeJS.Timeout>()
   const lastSavedTimeRef = useRef<number>(0)
+
+  // Función para parsear archivos SRT
+  const parseSRT = (srtContent: string) => {
+    const subtitleArray: Array<{ start: number; end: number; text: string }> = []
+    const lines = srtContent.split('\n')
+    let i = 0
+
+    while (i < lines.length) {
+      const line = lines[i].trim()
+
+      // Buscar la línea de timing (contiene -->)
+      if (line.includes('-->')) {
+        const parts = line.split('-->')
+        const start = convertTimeToSeconds(parts[0].trim())
+        const end = convertTimeToSeconds(parts[1].trim())
+
+        // Recolectar el texto del subtítulo
+        let text = ''
+        i++
+        while (i < lines.length && lines[i].trim() !== '') {
+          if (text) text += '\n'
+          text += lines[i].trim()
+          i++
+        }
+
+        if (text) {
+          subtitleArray.push({ start, end, text })
+        }
+      }
+      i++
+    }
+
+    return subtitleArray
+  }
+
+  // Función para convertir tiempo SRT (HH:MM:SS,mmm) a segundos
+  const convertTimeToSeconds = (timeString: string) => {
+    const parts = timeString.split(':')
+    const hours = parseInt(parts[0], 10)
+    const minutes = parseInt(parts[1], 10)
+    const seconds = parseFloat(parts[2].replace(',', '.'))
+    return hours * 3600 + minutes * 60 + seconds
+  }
 
   const getVideoKey = () => {
     const videoIdentifier = `${title || "untitled"}_${src.split("/").pop() || src}`
@@ -459,21 +504,40 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize =
         })
         
         if (response.ok) {
+          const srtContent = await response.text()
+          const parsedSubtitles = parseSRT(srtContent)
+          setSubtitles(parsedSubtitles)
           setSubtitlesUrl(subtitleUrl)
-          console.log("[v0] Subtítulos encontrados y cargados:", subtitleUrl)
+          console.log("[v0] Subtítulos encontrados y parseados:", parsedSubtitles.length, "subtítulos")
         } else {
           console.log("[v0] Subtítulos no encontrados. Status:", response.status)
+          setSubtitles([])
           setSubtitlesUrl(null)
         }
       } catch (error) {
         // Si hay error, significa que el archivo de subtítulos no existe
         console.log("[v0] Error al cargar subtítulos:", error)
+        setSubtitles([])
         setSubtitlesUrl(null)
       }
     }
 
     loadSubtitles()
   }, [src])
+
+  // Sincronizar subtítulos con el tiempo actual del video
+  useEffect(() => {
+    if (subtitles.length === 0) {
+      setCurrentSubtitle(null)
+      return
+    }
+
+    const currentSub = subtitles.find(
+      (sub) => currentTime >= sub.start && currentTime <= sub.end
+    )
+
+    setCurrentSubtitle(currentSub ? currentSub.text : null)
+  }, [currentTime, subtitles])
   
   const togglePlay = () => {
     const video = videoRef.current
@@ -793,6 +857,15 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize =
           <track kind="subtitles" src={subtitlesUrl} srcLang="es" label="Español" default />
         )}
       </video>
+
+      {/* Subtítulos renderizados */}
+      {currentSubtitle && (
+        <div className="absolute bottom-20 left-0 right-0 flex justify-center px-4 pointer-events-none">
+          <div className="bg-black/80 text-white px-4 py-2 rounded text-center max-w-2xl text-sm md:text-base leading-relaxed whitespace-pre-wrap">
+            {currentSubtitle}
+          </div>
+        </div>
+      )}
 
       {showControls && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
