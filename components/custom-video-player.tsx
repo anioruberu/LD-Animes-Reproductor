@@ -536,10 +536,6 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize =
       (sub) => currentTime >= sub.start && currentTime <= sub.end
     )
 
-    if (currentSub) {
-      console.log("[v0] Subtítulo actual:", currentSub.text, "Tiempo:", currentTime)
-    }
-
     setCurrentSubtitle(currentSub ? currentSub.text : null)
   }, [currentTime, subtitles])
   
@@ -864,8 +860,8 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize =
 
       {/* Subtítulos renderizados */}
       {currentSubtitle && (
-        <div className="absolute bottom-16 left-0 right-0 flex justify-center px-4 pointer-events-none z-40">
-          <div className="bg-black/90 text-white px-4 py-2 rounded text-center max-w-2xl text-sm md:text-base leading-relaxed whitespace-pre-wrap">
+        <div className="absolute bottom-20 left-0 right-0 flex justify-center px-4 pointer-events-none">
+          <div className="bg-black/80 text-white px-4 py-2 rounded text-center max-w-2xl text-sm md:text-base leading-relaxed whitespace-pre-wrap">
             {currentSubtitle}
           </div>
         </div>
