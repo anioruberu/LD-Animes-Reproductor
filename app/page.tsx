@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Play, Copy, ExternalLink, Download } from "lucide-react"
+import { encodeVideoUrl } from "@/lib/url-codec"
 
 export default function HomePage() {
   const [url, setUrl] = useState("")
   const [subtitlesUrl, setSubtitlesUrl] = useState("")
+  const [encodeUrl, setEncodeUrl] = useState(false)
   const [error, setError] = useState("")
   const [copiedItem, setCopiedItem] = useState<string | null>(null)
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
@@ -47,7 +49,7 @@ export default function HomePage() {
 
   const handleGoToPlayer = (playerType: 'blue' | 'orange' = 'blue') => {
     if (videoUrl) {
-      const encodedUrl = encodeURIComponent(videoUrl)
+      const encodedUrl = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
       const route = playerType === 'orange' ? '/r2' : '/r'
       const encodedSubtitles = subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ""
       router.push(`${route}?url=${encodedUrl}${encodedSubtitles}`)
@@ -56,8 +58,8 @@ export default function HomePage() {
 
   const handleDownload = () => {
     if (videoUrl) {
-      const encodedUrl = encodeURIComponent(videoUrl)
-      router.push(`/d?url=${encodedUrl}`)
+      const encodedUrl = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
+      router.push(`/${selectedPlayer === 'orange' ? 'd2' : 'd'}?url=${encodedUrl}`)
     }
   }
 
@@ -71,12 +73,13 @@ export default function HomePage() {
     if (!videoUrl) return ""
     const route = selectedPlayer === 'orange' ? '/r2' : '/r'
     const suffix = subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ""
-    return `${window.location.origin}${route}?url=${encodeURIComponent(videoUrl)}${suffix}`
+    const encodedVideo = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
+    return `${window.location.origin}${route}?url=${encodedVideo}${suffix}`
   }
 
   const getEmbedCode = () => {
     if (!videoUrl) return ""
-    const encodedUrl = encodeURIComponent(videoUrl)
+    const encodedUrl = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
     const route = selectedPlayer === 'orange' ? '/r2' : '/r'
     const encodedSubtitles = subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ""
     const shareUrl = `${window.location.origin}${route}?url=${encodedUrl}${encodedSubtitles}`
@@ -126,6 +129,20 @@ export default function HomePage() {
             <p className="mt-1 text-xs text-gray-500">Hugging Face seguirá buscando automáticamente su archivo .srt si lo dejas vacío.</p>
           </div>
 
+          <label htmlFor="encode-url" className="flex items-start gap-3 rounded-lg border border-slate-700 bg-slate-800/60 p-3 text-sm text-gray-300 cursor-pointer">
+            <input
+              id="encode-url"
+              type="checkbox"
+              checked={encodeUrl}
+              onChange={(e) => setEncodeUrl(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-blue-600"
+            />
+            <span>
+              <span className="block font-medium text-white">Codificar URL</span>
+              <span className="block text-xs text-gray-500">Oculta la fuente en los enlaces compartidos usando Base64.</span>
+            </span>
+          </label>
+
           {error && (
             <div className="p-3 bg-red-900/20 border border-red-800 rounded-lg text-sm text-red-300">
               {error}
@@ -148,7 +165,7 @@ export default function HomePage() {
               <div className="aspect-video bg-black relative">
                 <iframe
                   key={selectedPlayer}
-                  src={`${window.location.origin}${selectedPlayer === 'orange' ? '/r2' : '/r'}?url=${encodeURIComponent(videoUrl)}${subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ''}`}
+                  src={`${window.location.origin}${selectedPlayer === 'orange' ? '/r2' : '/r'}?url=${encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)}${subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ''}`}
                   className="w-full h-full"
                   allowFullScreen
                   title={selectedPlayer === 'blue' ? 'LD Animes' : 'GokuPlay -Reporductor'}
