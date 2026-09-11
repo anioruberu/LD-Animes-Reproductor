@@ -8,6 +8,7 @@ import { Play, Copy, ExternalLink, Download } from "lucide-react"
 
 export default function HomePage() {
   const [url, setUrl] = useState("")
+  const [subtitlesUrl, setSubtitlesUrl] = useState("")
   const [error, setError] = useState("")
   const [copiedItem, setCopiedItem] = useState<string | null>(null)
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
@@ -34,7 +35,8 @@ export default function HomePage() {
     }
 
     // Mostrar el embed del video
-    setVideoUrl(url)
+    setVideoUrl(url.trim())
+    setSubtitlesUrl(subtitlesUrl.trim())
     setShowEmbedOptions(true)
 
     // También permitir ir a la página /r si lo desea
@@ -47,7 +49,8 @@ export default function HomePage() {
     if (videoUrl) {
       const encodedUrl = encodeURIComponent(videoUrl)
       const route = playerType === 'orange' ? '/r2' : '/r'
-      router.push(`${route}?url=${encodedUrl}`)
+      const encodedSubtitles = subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ""
+      router.push(`${route}?url=${encodedUrl}${encodedSubtitles}`)
     }
   }
 
@@ -67,7 +70,8 @@ export default function HomePage() {
   const getShareUrl = () => {
     if (!videoUrl) return ""
     const route = selectedPlayer === 'orange' ? '/r2' : '/r'
-    return `${window.location.origin}${route}?url=${encodeURIComponent(videoUrl)}`
+    const suffix = subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ""
+    return `${window.location.origin}${route}?url=${encodeURIComponent(videoUrl)}${suffix}`
   }
 
   const getEmbedCode = () => {
@@ -104,6 +108,21 @@ export default function HomePage() {
               onChange={(e) => setUrl(e.target.value)}
               className="w-full bg-slate-800 border-slate-700 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
             />
+          </div>
+
+          <div>
+            <label htmlFor="subtitles-url" className="block text-sm font-medium text-gray-300 mb-2">
+              Fuente de los subtítulos (opcional)
+            </label>
+            <Input
+              id="subtitles-url"
+              type="url"
+              placeholder="https://ejemplo.com/subtitulos.srt"
+              value={subtitlesUrl}
+              onChange={(e) => setSubtitlesUrl(e.target.value)}
+              className="w-full bg-slate-800 border-slate-700 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+            />
+            <p className="mt-1 text-xs text-gray-500">Hugging Face seguirá buscando automáticamente su archivo .srt si lo dejas vacío.</p>
           </div>
 
           {error && (
