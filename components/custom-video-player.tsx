@@ -528,7 +528,7 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize =
     }
 
     loadSubtitles()
-  }, [src])
+  }, [src, manualSubtitlesUrl])
 
   // Sincronizar subtítulos con el tiempo actual del video
   useEffect(() => {
