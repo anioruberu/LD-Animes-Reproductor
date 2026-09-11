@@ -515,7 +515,7 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, forceFull
     }
 
     loadSubtitles()
-  }, [src])
+  }, [src, manualSubtitlesUrl])
 
   // Sincronizar subtítulos con el tiempo actual del video
   useEffect(() => {

@@ -42,13 +42,15 @@ function VideoPlayerContent() {
 
   useEffect(() => {
     const rawUrl = searchParams.get("url")
-    const explicitSub = searchParams.get("sub")
+    const querySub = searchParams.get("sub")
     if (!rawUrl) {
       setError("No se proporcionó una URL de video")
       return
     }
 
-    const url = rawUrl + (explicitSub ? `/sub=${explicitSub}` : "")
+    const separatorIndex = rawUrl.indexOf("/sub=")
+    const url = separatorIndex >= 0 ? rawUrl.slice(0, separatorIndex) : rawUrl
+    const explicitSub = querySub || (separatorIndex >= 0 ? rawUrl.slice(separatorIndex + "/sub=".length) : null)
     const isPixelDrain = rawUrl.includes("pixeldrain.com")
     const isHuggingFace = url.includes("huggingface.co") && (url.endsWith(".mkv") || url.endsWith(".mp4"))
     const isZillaNetworks = url.includes("player.zilla-networks.com") || url.includes(".m3u8")

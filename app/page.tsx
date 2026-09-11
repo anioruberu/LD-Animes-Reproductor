@@ -78,7 +78,8 @@ export default function HomePage() {
     if (!videoUrl) return ""
     const encodedUrl = encodeURIComponent(videoUrl)
     const route = selectedPlayer === 'orange' ? '/r2' : '/r'
-    const shareUrl = `${window.location.origin}${route}?url=${encodedUrl}`
+    const encodedSubtitles = subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ""
+    const shareUrl = `${window.location.origin}${route}?url=${encodedUrl}${encodedSubtitles}`
     return `<iframe src="${shareUrl}" width="100%" height="600" frameborder="0" allowfullscreen style="border-radius: 8px; border: none;"></iframe>`
   }
 
@@ -147,7 +148,7 @@ export default function HomePage() {
               <div className="aspect-video bg-black relative">
                 <iframe
                   key={selectedPlayer}
-                  src={`${window.location.origin}${selectedPlayer === 'orange' ? '/r2' : '/r'}?url=${encodeURIComponent(videoUrl)}`}
+                  src={`${window.location.origin}${selectedPlayer === 'orange' ? '/r2' : '/r'}?url=${encodeURIComponent(videoUrl)}${subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ''}`}
                   className="w-full h-full"
                   allowFullScreen
                   title={selectedPlayer === 'blue' ? 'LD Animes' : 'GokuPlay -Reporductor'}
