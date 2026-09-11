@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { CustomVideoPlayer } from "@/components/custom-video-player"
 import { ExternalLink } from "lucide-react"
+import { decodeVideoUrl } from "@/lib/url-codec"
 
 function VideoPlayerContent() {
   const searchParams = useSearchParams()
@@ -41,7 +42,7 @@ function VideoPlayerContent() {
   }
 
   useEffect(() => {
-    const rawUrl = searchParams.get("url")
+    const rawUrl = decodeVideoUrl(searchParams.get("url"))
     const querySub = searchParams.get("sub")
     if (!rawUrl) {
       setError("No se proporcionó una URL de video")
