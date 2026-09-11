@@ -8,6 +8,7 @@ import { ExternalLink } from "lucide-react"
 function VideoPlayerContent() {
   const searchParams = useSearchParams()
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
+  const [subtitlesUrl, setSubtitlesUrl] = useState<string | null>(null)
   const [videoTitle, setVideoTitle] = useState<string>("LD Animes - Reproductor")
   const [error, setError] = useState<string | null>(null)
 
@@ -40,13 +41,15 @@ function VideoPlayerContent() {
   }
 
   useEffect(() => {
-    const url = searchParams.get("url")
-    if (!url) {
+    const rawUrl = searchParams.get("url")
+    const explicitSub = searchParams.get("sub")
+    if (!rawUrl) {
       setError("No se proporcionó una URL de video")
       return
     }
 
-    const isPixelDrain = url.includes("pixeldrain.com")
+    const url = rawUrl + (explicitSub ? `/sub=${explicitSub}` : "")
+    const isPixelDrain = rawUrl.includes("pixeldrain.com")
     const isHuggingFace = url.includes("huggingface.co") && (url.endsWith(".mkv") || url.endsWith(".mp4"))
     const isZillaNetworks = url.includes("player.zilla-networks.com") || url.includes(".m3u8")
     const isDirectVideo = url.match(/\.(mp4|mkv|webm|avi|mov)(\?.*)?$/i)
@@ -92,6 +95,7 @@ function VideoPlayerContent() {
     console.log("[v0] Processed URL:", processedUrl)
     console.log("[v0] Título extraído:", extractedTitle)
     setVideoUrl(processedUrl)
+    setSubtitlesUrl(explicitSub ? decodeURIComponent(explicitSub) : null)
   }, [searchParams])
 
   if (error) {
@@ -132,8 +136,9 @@ function VideoPlayerContent() {
     <div className="fixed inset-0 bg-black overflow-hidden" style={{ height: "100vh", width: "100vw" }}>
       <div className="w-full h-full flex items-center justify-center">
         <CustomVideoPlayer
-          src={videoUrl}
-          title={videoTitle}
+  src={videoUrl}
+  title={videoTitle}
+  subtitlesUrl={subtitlesUrl}
           onError={() => setError("Error al cargar el video")}
           forceFullSize={true}
         />

@@ -14,9 +14,10 @@ interface CustomVideoPlayerProps {
   onError?: () => void
   onLoad?: () => void
   forceFullSize?: boolean
+  subtitlesUrl?: string | null
 }
 
-export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize = false }: CustomVideoPlayerProps) {
+export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize = false, subtitlesUrl: manualSubtitlesUrl = null }: CustomVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -486,14 +487,18 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize =
     }
     }, [])
 
-  // Cargar automáticamente subtítulos si existen
+  // Cargar fuente manual primero; si no existe, autodetectar el .srt de Hugging Face
   useEffect(() => {
     if (!src) return
 
     const loadSubtitles = async () => {
       try {
-        // Reemplazar la extensión del archivo por .srt
-        const subtitleUrl = src.replace(/\.[^.]+$/, '.srt')
+        const subtitleUrl = manualSubtitlesUrl?.trim() || (src.includes("huggingface.co") ? src.replace(/\.[^.]+$/, '.srt') : null)
+        if (!subtitleUrl) {
+          setSubtitles([])
+          setSubtitlesUrl(null)
+          return
+        }
         console.log("[v0] Intentando cargar subtítulos desde:", subtitleUrl)
         
         // Intentar hacer un GET request para verificar si el archivo existe
