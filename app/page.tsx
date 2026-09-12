@@ -41,9 +41,15 @@ export default function HomePage() {
     // Mostrar el embed del video
   setVideoUrl(url.trim())
   setSubtitlesUrl(subtitlesUrl.trim())
-  const saved: PlaylistItem = { url: url.trim(), subtitlesUrl: subtitlesUrl.trim() || undefined }
-  const library = readVideoLibrary().filter((item) => item.url !== saved.url)
-  writeVideoLibrary([...library, saved])
+    const saved: PlaylistItem = { url: url.trim(), subtitlesUrl: subtitlesUrl.trim() || undefined }
+    const library = readVideoLibrary()
+    if (editingLibraryIndex !== null) {
+      const updated = library.map((item, index) => index === editingLibraryIndex ? saved : item)
+      writeVideoLibrary(updated)
+      setEditingLibraryIndex(null)
+    } else {
+      writeVideoLibrary([...library.filter((item) => item.url !== saved.url), saved])
+    }
     setShowEmbedOptions(true)
 
     // También permitir ir a la página /r si lo desea
@@ -51,6 +57,8 @@ export default function HomePage() {
   }
 
   const [selectedPlayer, setSelectedPlayer] = useState<'blue' | 'orange'>('blue')
+  const [playlistItems, setPlaylistItems] = useState<PlaylistItem[]>([])
+  const [editingLibraryIndex, setEditingLibraryIndex] = useState<number | null>(null)
 
   const handleGoToPlayer = (playerType: 'blue' | 'orange' = 'blue') => {
     if (videoUrl) {
@@ -104,17 +112,24 @@ export default function HomePage() {
           <p className="text-gray-400">Ingresa una URL de video compatible</p>
         </div>
 
-        <VideoLibrary onOpen={(items) => {
-  if (items.length === 1) {
-  setUrl(items[0].url)
-  setSubtitlesUrl(items[0].subtitlesUrl || "")
-  setVideoUrl(items[0].url)
-  setShowEmbedOptions(true)
-  } else {
-  const playlist = encodePlaylist(items)
-  router.push(`${selectedPlayer === "orange" ? "/r2" : "/r"}?playlist=${encodeURIComponent(playlist)}`)
-  }
-  }} />
+        <VideoLibrary
+        onOpen={(items) => {
+          if (items.length === 1) {
+            setUrl(items[0].url)
+            setSubtitlesUrl(items[0].subtitlesUrl || "")
+            setVideoUrl(items[0].url)
+            setShowEmbedOptions(true)
+          }
+        }}
+        onEdit={(item, index) => {
+          setEditingLibraryIndex(index)
+          setUrl(item.url)
+          setSubtitlesUrl(item.subtitlesUrl || "")
+          setVideoUrl(null)
+          setShowEmbedOptions(false)
+          setError("")
+        }}
+      />
   <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="url" className="block text-sm font-medium text-gray-300 mb-2">
@@ -173,6 +188,36 @@ export default function HomePage() {
             Reproducir Video
           </Button>
         </form>
+
+        <section className="mt-6 rounded-xl border border-indigo-500/30 bg-indigo-950/20 p-4">
+          <div className="mb-3">
+            <h2 className="text-sm font-semibold text-white">Playlist</h2>
+            <p className="mt-1 text-xs text-slate-400">Agrega varios videos para reproducirlos automáticamente, de forma independiente de la biblioteca local.</p>
+          </div>
+          {playlistItems.length > 0 && (
+            <div className="mb-3 flex flex-col gap-2">
+              {playlistItems.map((item, index) => (
+                <div key={`${item.url}-${index}`} className="flex items-center gap-2 rounded-lg bg-slate-800 p-2 text-xs text-slate-200">
+                  <span className="w-5 shrink-0 text-indigo-300">{index + 1}.</span>
+                  <span className="min-w-0 flex-1 truncate">{item.title || item.url}</span>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => setPlaylistItems((current) => current.filter((_, itemIndex) => itemIndex !== index))}>Quitar</Button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button type="button" variant="secondary" className="flex-1" onClick={() => {
+              if (!url.trim()) { setError("Ingresa una URL antes de agregarla a la playlist"); return }
+              const item: PlaylistItem = { url: url.trim(), subtitlesUrl: subtitlesUrl.trim() || undefined }
+              setPlaylistItems((current) => [...current.filter((entry) => entry.url !== item.url), item])
+              setError("")
+            }}>Agregar video actual</Button>
+            <Button type="button" className="flex-1 bg-indigo-600 hover:bg-indigo-700" disabled={playlistItems.length === 0} onClick={() => {
+              const playlist = encodePlaylist(playlistItems)
+              router.push(`${selectedPlayer === "orange" ? "/r2" : "/r"}?playlist=${encodeURIComponent(playlist)}`)
+            }}>Reproducir playlist ({playlistItems.length})</Button>
+          </div>
+        </section>
 
         {videoUrl && showEmbedOptions && (
           <div className="mt-8 space-y-4">
