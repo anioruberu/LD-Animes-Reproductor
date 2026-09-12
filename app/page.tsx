@@ -209,7 +209,7 @@ export default function HomePage() {
             <Button type="button" variant="secondary" className="flex-1" onClick={() => {
               if (!url.trim()) { setError("Ingresa una URL antes de agregarla a la playlist"); return }
               const item: PlaylistItem = { url: url.trim(), subtitlesUrl: subtitlesUrl.trim() || undefined }
-              setPlaylistItems((current) => [...current.filter((entry) => entry.url !== item.url), item])
+              setPlaylistItems((current) => [...current, item])
               setError("")
             }}>Agregar video actual</Button>
             <Button type="button" className="flex-1 bg-indigo-600 hover:bg-indigo-700" disabled={playlistItems.length === 0} onClick={() => {
