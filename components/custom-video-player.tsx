@@ -15,9 +15,10 @@ interface CustomVideoPlayerProps {
   onLoad?: () => void
   forceFullSize?: boolean
   subtitlesUrl?: string | null
+  onEnded?: () => void
 }
 
-export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize = false, subtitlesUrl: manualSubtitlesUrl = null }: CustomVideoPlayerProps) {
+export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, forceFullSize = false, subtitlesUrl: manualSubtitlesUrl = null }: CustomVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -318,7 +319,7 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, forceFullSize =
     }
 
     const handleEnded = () => {
-      // Video terminado, mantener el progreso para potencial reanudación
+      onEnded?.()
     }
 
     const handleProgress = () => {

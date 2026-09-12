@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Play, Copy, ExternalLink, Download } from "lucide-react"
 import { encodeVideoUrl } from "@/lib/url-codec"
+import { VideoLibrary } from "@/components/video-library"
+import { encodePlaylist, writeVideoLibrary, readVideoLibrary, type PlaylistItem } from "@/lib/playlist"
 
 export default function HomePage() {
   const [url, setUrl] = useState("")
@@ -37,8 +39,11 @@ export default function HomePage() {
     }
 
     // Mostrar el embed del video
-    setVideoUrl(url.trim())
-    setSubtitlesUrl(subtitlesUrl.trim())
+  setVideoUrl(url.trim())
+  setSubtitlesUrl(subtitlesUrl.trim())
+  const saved: PlaylistItem = { url: url.trim(), subtitlesUrl: subtitlesUrl.trim() || undefined }
+  const library = readVideoLibrary().filter((item) => item.url !== saved.url)
+  writeVideoLibrary([...library, saved])
     setShowEmbedOptions(true)
 
     // También permitir ir a la página /r si lo desea
@@ -99,7 +104,18 @@ export default function HomePage() {
           <p className="text-gray-400">Ingresa una URL de video compatible</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <VideoLibrary onOpen={(items) => {
+  if (items.length === 1) {
+  setUrl(items[0].url)
+  setSubtitlesUrl(items[0].subtitlesUrl || "")
+  setVideoUrl(items[0].url)
+  setShowEmbedOptions(true)
+  } else {
+  const playlist = encodePlaylist(items)
+  router.push(`${selectedPlayer === "orange" ? "/r2" : "/r"}?playlist=${encodeURIComponent(playlist)}`)
+  }
+  }} />
+  <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="url" className="block text-sm font-medium text-gray-300 mb-2">
               URL del Video

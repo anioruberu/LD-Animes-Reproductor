@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { CustomVideoPlayerOrange } from "@/components/custom-video-player-orange"
 import { ExternalLink } from "lucide-react"
 import { decodeVideoUrl, encodeVideoUrl } from "@/lib/url-codec"
+import { decodePlaylist, type PlaylistItem } from "@/lib/playlist"
 
 function VideoPlayerContent() {
   const searchParams = useSearchParams()
@@ -12,6 +13,8 @@ function VideoPlayerContent() {
   const [subtitlesUrl, setSubtitlesUrl] = useState<string | null>(null)
   const [videoTitle, setVideoTitle] = useState<string>("GokuPlay - Reproductor")
   const [error, setError] = useState<string | null>(null)
+  const [playlist, setPlaylist] = useState<PlaylistItem[]>([])
+  const [playlistIndex, setPlaylistIndex] = useState(0)
 
   const extractTitleFromUrl = (url: string): string => {
     try {
@@ -49,8 +52,11 @@ function VideoPlayerContent() {
       normalizedParams.set("curl", encodeVideoUrl(curlValue))
       window.history.replaceState(null, "", `${window.location.pathname}?${normalizedParams.toString()}`)
     }
-    const rawUrl = decodeVideoUrl(sourceValue)
-    const querySub = searchParams.get("sub")
+    const playlistItems = decodePlaylist(searchParams.get("playlist"))
+    if (playlistItems.length) setPlaylist(playlistItems)
+    const currentItem = playlistItems[playlistIndex]
+    const rawUrl = decodeVideoUrl(currentItem?.url ?? sourceValue)
+    const querySub = currentItem?.subtitlesUrl ?? searchParams.get("sub")
     if (!rawUrl) {
       setError("No se proporcionó una URL de video")
       return
@@ -106,7 +112,7 @@ function VideoPlayerContent() {
     console.log("[v0] Título extraído:", extractedTitle)
     setVideoUrl(processedUrl)
     setSubtitlesUrl(explicitSub ? decodeURIComponent(explicitSub) : null)
-  }, [searchParams])
+  }, [searchParams, playlistIndex])
 
   if (error) {
     return (
@@ -150,6 +156,7 @@ function VideoPlayerContent() {
   title={videoTitle}
   subtitlesUrl={subtitlesUrl}
           onError={() => setError("Error al cargar el video")}
+          onEnded={() => setPlaylistIndex((index) => index + 1 < playlist.length ? index + 1 : index)}
           forceFullSize={true}
         />
       </div>
