@@ -952,10 +952,7 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, forceF
 
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-          <div className="text-center text-white">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-            <p>Cargando video...</p>
-          </div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
         </div>
       )}
 
