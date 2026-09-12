@@ -38,7 +38,9 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, 
   const [showSettingsMenu, setShowSettingsMenu] = useState(false)
   const [showSkipIcon, setShowSkipIcon] = useState<"forward" | "backward" | null>(null)
   const [buffered, setBuffered] = useState(0)
+  const endedRef = useRef(false)
   const [isFillScreen, setIsFillScreen] = useState(false)
+
   const [subtitlesUrl, setSubtitlesUrl] = useState<string | null>(null)
   const [subtitles, setSubtitles] = useState<Array<{ start: number; end: number; text: string }>>([])
   const [currentSubtitle, setCurrentSubtitle] = useState<string | null>(null)
@@ -253,6 +255,10 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, 
   }, [volume, isFullscreen])
 
   useEffect(() => {
+    endedRef.current = false
+  }, [src])
+
+  useEffect(() => {
     const video = videoRef.current
     if (!video) return
 
@@ -324,10 +330,13 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, 
       setIsSeeking(false)
     }
 
-  const handleEnded = () => {
-    clearProgress()
-    onEnded?.()
-  }
+    const handleEnded = () => {
+      if (endedRef.current) return
+      endedRef.current = true
+      clearProgress()
+      onEnded?.()
+    }
+
 
     const handleProgress = () => {
       if (video.buffered.length > 0 && video.duration > 0) {
