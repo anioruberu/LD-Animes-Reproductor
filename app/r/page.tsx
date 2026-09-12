@@ -140,10 +140,9 @@ function VideoPlayerContent() {
   if (!videoUrl) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center text-white">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p>Cargando reproductor...</p>
-        </div>
+          <div className="flex items-center justify-center" aria-label="Cargando video">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+          </div>
       </div>
     )
   }
