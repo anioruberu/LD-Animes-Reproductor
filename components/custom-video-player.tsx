@@ -38,6 +38,7 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, isPlay
   const [showSettingsMenu, setShowSettingsMenu] = useState(false)
   const [showSkipIcon, setShowSkipIcon] = useState<"forward" | "backward" | null>(null)
   const [buffered, setBuffered] = useState(0)
+  const endedRef = useRef(false)
   const [isFillScreen, setIsFillScreen] = useState(false)
   const [subtitlesUrl, setSubtitlesUrl] = useState<string | null>(null)
   const [subtitles, setSubtitles] = useState<Array<{ start: number; end: number; text: string }>>([])
@@ -253,6 +254,10 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, isPlay
   }, [volume, isFullscreen])
 
   useEffect(() => {
+    endedRef.current = false
+  }, [src])
+
+  useEffect(() => {
     const video = videoRef.current
     if (!video) return
 
@@ -325,6 +330,8 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, isPlay
     }
 
     const handleEnded = () => {
+      if (endedRef.current) return
+      endedRef.current = true
       clearProgress()
       onEnded?.()
     }
