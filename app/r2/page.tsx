@@ -15,6 +15,7 @@ function VideoPlayerContent() {
   const [error, setError] = useState<string | null>(null)
   const [playlist, setPlaylist] = useState<PlaylistItem[]>([])
   const [playlistIndex, setPlaylistIndex] = useState(0)
+  const [isPlaylistTransition, setIsPlaylistTransition] = useState(false)
 
   const extractTitleFromUrl = (url: string): string => {
     try {
@@ -155,7 +156,12 @@ function VideoPlayerContent() {
   title={videoTitle}
   subtitlesUrl={subtitlesUrl}
           onError={() => setError("Error al cargar el video")}
-          onEnded={() => setPlaylistIndex((index) => index + 1 < playlist.length ? index + 1 : index)}
+          onLoad={() => setIsPlaylistTransition(false)}
+          isPlaylistTransition={isPlaylistTransition}
+          onEnded={() => {
+            if (playlist.length > 0) setIsPlaylistTransition(true)
+            setPlaylistIndex((index) => playlist.length > 0 ? (index + 1) % playlist.length : index)
+          }}
           forceFullSize={true}
         />
       </div>
