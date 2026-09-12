@@ -15,9 +15,10 @@ interface CustomVideoPlayerProps {
   onLoad?: () => void
   forceFullSize?: boolean
   subtitlesUrl?: string | null
+  onEnded?: () => void
 }
 
-export function CustomVideoPlayerOrange({ src, title, onError, onLoad, forceFullSize = false, subtitlesUrl: manualSubtitlesUrl = null }: CustomVideoPlayerProps) {
+export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, forceFullSize = false, subtitlesUrl: manualSubtitlesUrl = null }: CustomVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -317,9 +318,9 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, forceFull
       setIsSeeking(false)
     }
 
-    const handleEnded = () => {
-      // Video terminado, mantener el progreso para potencial reanudación
-    }
+  const handleEnded = () => {
+  onEnded?.()
+  }
 
     const handleProgress = () => {
       if (video.buffered.length > 0 && video.duration > 0) {
