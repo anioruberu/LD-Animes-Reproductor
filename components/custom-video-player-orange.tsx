@@ -16,9 +16,10 @@ interface CustomVideoPlayerProps {
   forceFullSize?: boolean
   subtitlesUrl?: string | null
   onEnded?: () => void
+  isPlaylistTransition?: boolean
 }
 
-export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, forceFullSize = false, subtitlesUrl: manualSubtitlesUrl = null }: CustomVideoPlayerProps) {
+export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, isPlaylistTransition = false, forceFullSize = false, subtitlesUrl: manualSubtitlesUrl = null }: CustomVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -298,9 +299,14 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, 
       setDuration(video.duration)
     }
 
-    const handleLoadStart = () => {
+  const handleLoadStart = () => {
+    if (isPlaylistTransition) {
+      setIsLoading(false)
+      setIsSeeking(true)
+    } else {
       setIsLoading(true)
     }
+  }
 
     const handleSeeking = () => {
       setIsSeeking(true)
@@ -394,7 +400,7 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, 
         hlsInstance.destroy()
       }
     }
-  }, [src, onLoad, onError])
+  }, [src, onLoad, onError, isPlaylistTransition])
 
   // Intervalo para guardar progreso automáticamente cada segundo mientras se reproduce
   useEffect(() => {
