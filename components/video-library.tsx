@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { encodePlaylist, getVideoTitle, readVideoLibrary, writeVideoLibrary, type PlaylistItem } from "@/lib/playlist"
+import { getVideoTitle, readVideoLibrary, writeVideoLibrary, type PlaylistItem } from "@/lib/playlist"
 
-export function VideoLibrary({ onOpen }: { onOpen: (items: PlaylistItem[]) => void }) {
+export function VideoLibrary({ onOpen, onEdit }: { onOpen: (items: PlaylistItem[]) => void; onEdit: (item: PlaylistItem, index: number) => void }) {
   const [items, setItems] = useState<PlaylistItem[]>([])
   useEffect(() => setItems(readVideoLibrary()), [])
   const remove = (index: number) => {
@@ -18,11 +18,10 @@ export function VideoLibrary({ onOpen }: { onOpen: (items: PlaylistItem[]) => vo
     <div className="flex flex-col gap-2">
       {items.map((item, index) => <div key={`${item.url}-${index}`} className="flex items-center justify-between gap-3 rounded-lg bg-slate-800 p-3">
         <span className="truncate text-sm text-slate-200">{item.title || getVideoTitle(item.url)}</span>
-        <div className="flex shrink-0 gap-2"><Button size="sm" onClick={() => onOpen([item])}>Abrir</Button><Button size="sm" variant="destructive" onClick={() => remove(index)}>Borrar</Button></div>
+        <div className="flex shrink-0 gap-2"><Button size="sm" onClick={() => onOpen([item])}>Abrir</Button><Button size="sm" variant="outline" onClick={() => onEdit(item, index)}>Editar</Button><Button size="sm" variant="destructive" onClick={() => remove(index)}>Borrar</Button></div>
       </div>)}
     </div>
-    {items.length > 1 && <Button className="mt-3 w-full" variant="secondary" onClick={() => onOpen(items)}>Reproducir playlist ({items.length})</Button>}
+
   </section>
 }
 
-export { encodePlaylist }
