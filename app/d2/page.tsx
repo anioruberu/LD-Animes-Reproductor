@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { Download, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { decodeVideoUrl } from "@/lib/url-codec"
+import { decodeVideoUrl, encodeVideoUrl } from "@/lib/url-codec"
 
 function DownloadContent() {
   const searchParams = useSearchParams()
@@ -13,7 +13,14 @@ function DownloadContent() {
   const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
-    const url = decodeVideoUrl(searchParams.get("url"))
+    const curlValue = searchParams.get("curl")
+    const sourceValue = curlValue ?? searchParams.get("url")
+    if (curlValue && !curlValue.startsWith("v1_")) {
+      const normalizedParams = new URLSearchParams(searchParams.toString())
+      normalizedParams.set("curl", encodeVideoUrl(curlValue))
+      window.history.replaceState(null, "", `${window.location.pathname}?${normalizedParams.toString()}`)
+    }
+    const url = decodeVideoUrl(sourceValue)
     if (!url) {
       setError("No se proporcionó una URL de video")
       return
