@@ -1,4 +1,7 @@
 import { NextRequest } from "next/server"
+import { getHuggingFaceToken } from "@/lib/huggingface"
+
+export const runtime = "edge"
 
 const PRIVATE_PREFIX = "/anioruberu/mp4/"
 
@@ -13,7 +16,7 @@ function isAllowedTarget(value: string) {
 
 export async function GET(request: NextRequest) {
   const targetValue = request.nextUrl.searchParams.get("url")
-  const token = process.env.GokuPlay
+  const token = getHuggingFaceToken()
 
   if (!targetValue || !token || !isAllowedTarget(targetValue)) {
     return new Response("Not found", { status: 404 })
@@ -25,14 +28,19 @@ export async function GET(request: NextRequest) {
   const range = request.headers.get("range")
   if (range) headers.set("range", range)
 
-  const upstream = await fetch(target, {
+  let upstream: Response
+  try {
+    upstream = await fetch(target, {
     headers: {
       Authorization: `Bearer ${token}`,
       ...(range ? { Range: range } : {}),
     },
     redirect: "follow",
     cache: "no-store",
-  })
+    })
+  } catch {
+    return new Response("Unable to reach Hugging Face", { status: 502 })
+  }
 
   if (!upstream.ok && upstream.status !== 206) {
     return new Response("Unable to fetch private video", { status: upstream.status })
