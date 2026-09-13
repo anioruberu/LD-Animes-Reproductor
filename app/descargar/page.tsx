@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { Download, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { decodeVideoUrl, encodeVideoUrl } from "@/lib/url-codec"
+import { getHuggingFaceProxyUrl } from "@/lib/huggingface"
 
 function DownloadContent() {
   const searchParams = useSearchParams()
@@ -65,7 +66,7 @@ function DownloadContent() {
     }
 
     console.log("[v0] Download URL:", processedUrl)
-    setVideoUrl(processedUrl)
+    setVideoUrl(getHuggingFaceProxyUrl(processedUrl))
   }, [searchParams])
 
   const handleDownload = async () => {
