@@ -1,5 +1,13 @@
 const PRIVATE_REPOSITORY = "anioruberu/mp4"
 
+export function getHuggingFaceToken() {
+  const runtime = globalThis as typeof globalThis & {
+    __env__?: Record<string, string | undefined>
+  }
+
+  return process.env.GokuPlay || runtime.__env__?.GokuPlay || ""
+}
+
 export function isPrivateHuggingFaceUrl(value: string) {
   try {
     const url = new URL(value)
