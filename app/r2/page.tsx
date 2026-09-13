@@ -6,6 +6,7 @@ import { CustomVideoPlayerOrange } from "@/components/custom-video-player-orange
 import { ExternalLink } from "lucide-react"
 import { decodeVideoUrl, encodeVideoUrl } from "@/lib/url-codec"
 import { decodePlaylist, type PlaylistItem } from "@/lib/playlist"
+import { getHuggingFaceProxyUrl } from "@/lib/huggingface"
 
 function VideoPlayerContent() {
   const searchParams = useSearchParams()
@@ -111,7 +112,7 @@ function VideoPlayerContent() {
     console.log("[v0] Original URL:", url)
     console.log("[v0] Processed URL:", processedUrl)
     console.log("[v0] Título extraído:", extractedTitle)
-    setVideoUrl(processedUrl)
+    setVideoUrl(getHuggingFaceProxyUrl(processedUrl))
     setSubtitlesUrl(explicitSub ? decodeURIComponent(explicitSub) : null)
   }, [searchParams, playlistIndex])
 
