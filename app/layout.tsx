@@ -20,6 +20,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning className="bg-slate-900">
       <head>
+        <meta name="monetag" content="0d58a85eb8a1f5d43be7464494ba925e" />
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
       </head>
       <body className={inter.className}>
