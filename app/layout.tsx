@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: "Reproductor de Video Personalizado",
   description: "Reproductor de video personalizado para ver videos online desde múltiples fuentes compatibles",
   generator: "v0.app",
+  other: {
+    monetag: "0d58a85eb8a1f5d43be7464494ba925e",
+  },
 }
 
 export default function RootLayout({
