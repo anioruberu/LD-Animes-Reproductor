@@ -46,23 +46,6 @@ export function DownloadGate({
     }
   }, [])
 
-  useEffect(() => {
-    const scriptId = "quge5-multiuse-283271"
-    if (document.getElementById(scriptId)) return
-
-    const script = document.createElement("script")
-    script.id = scriptId
-    script.src = "https://quge5.com/88/tag.min.js"
-    script.async = true
-    script.dataset.zone = "283271"
-    script.dataset.cfasync = "false"
-    document.body.appendChild(script)
-
-    return () => {
-      script.remove()
-    }
-  }, [])
-
   const isLocked = remainingSeconds > 0 || downloading
 
   return (
