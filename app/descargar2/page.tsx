@@ -6,12 +6,14 @@ import { Download, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { decodeVideoUrl, encodeVideoUrl } from "@/lib/url-codec"
 import { getHuggingFaceProxyUrl } from "@/lib/huggingface"
+import { getDownloadFilename } from "@/lib/download-filename"
 import { MonetagRouteAds } from "@/components/monetag-route-ads"
 import { DownloadGate } from "@/components/download-gate"
 
 function DownloadContent() {
   const searchParams = useSearchParams()
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
+  const [filename, setFilename] = useState("video.mp4")
   const [error, setError] = useState<string | null>(null)
   const [downloading, setDownloading] = useState(false)
 
@@ -68,6 +70,7 @@ function DownloadContent() {
     }
 
     console.log("[v0] Download URL:", processedUrl)
+    setFilename(getDownloadFilename(processedUrl))
     setVideoUrl(getHuggingFaceProxyUrl(processedUrl))
   }, [searchParams])
 
@@ -89,7 +92,7 @@ function DownloadContent() {
 
         const link = document.createElement("a")
         link.href = downloadUrl
-        link.download = `video_${Date.now()}.mp4`
+        link.download = filename
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
@@ -107,7 +110,7 @@ function DownloadContent() {
       const blobUrl = window.URL.createObjectURL(blob)
       const link = document.createElement("a")
       link.href = blobUrl
-      link.download = `video_${Date.now()}.mp4`
+      link.download = filename
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -162,6 +165,7 @@ function DownloadContent() {
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Descargar Video</h1>
           <p className="text-gray-400">Haz clic para descargar tu video</p>
+          <p className="mt-2 text-sm text-gray-300">Archivo: <span className="font-medium text-white">{filename}</span></p>
         </div>
 
         <div className="bg-slate-800/50 rounded-lg border border-slate-700 p-6 space-y-4">
