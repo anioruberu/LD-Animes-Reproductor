@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { decodeVideoUrl, encodeVideoUrl } from "@/lib/url-codec"
 import { getHuggingFaceProxyUrl } from "@/lib/huggingface"
 import { MonetagRouteAds } from "@/components/monetag-route-ads"
+import { DownloadGate } from "@/components/download-gate"
 
 function DownloadContent() {
   const searchParams = useSearchParams()
@@ -164,14 +165,12 @@ function DownloadContent() {
         </div>
 
         <div className="bg-slate-800/50 rounded-lg border border-slate-700 p-6 space-y-4">
-          <Button
-            onClick={handleDownload}
-            disabled={downloading}
-            className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-orange-800 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
-          >
-            <Download className="h-5 w-5 fill-current" />
-            {downloading ? "Descargando..." : "Descargar Ahora"}
-          </Button>
+          <DownloadGate
+            onDownload={handleDownload}
+            downloading={downloading}
+            accentClassName="bg-orange-600 hover:bg-orange-700"
+            disabledClassName="disabled:bg-orange-800"
+          />
 
           <Button
             onClick={() => window.history.back()}
