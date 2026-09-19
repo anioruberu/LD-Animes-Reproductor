@@ -3,6 +3,17 @@ import { NextResponse } from "next/server"
 const RECAPTCHA_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify"
 const ALLOWED_DESTINATIONS = new Set(["/descargar", "/descargar2"])
 
+function getAuthorizedDestination(destination: string) {
+  try {
+    const url = new URL(destination, "https://reproductor.ldanimes.xyz")
+    if (!ALLOWED_DESTINATIONS.has(url.pathname) || url.origin !== "https://reproductor.ldanimes.xyz") return null
+    url.searchParams.set("verified", "1")
+    return `${url.pathname}?${url.searchParams.toString()}`
+  } catch {
+    return null
+  }
+}
+
 export async function POST(request: Request) {
   const secretKey = process.env.RECAPTCHA_SECRET_KEY
 
@@ -29,7 +40,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ authorized: false, error: "Token inválido" }, { status: 400 })
   }
 
-  if (typeof destination !== "string" || !ALLOWED_DESTINATIONS.has(destination)) {
+  if (typeof destination !== "string") {
+    return NextResponse.json({ authorized: false, error: "Destino inválido" }, { status: 400 })
+  }
+
+  const authorizedDestination = getAuthorizedDestination(destination)
+  if (!authorizedDestination) {
     return NextResponse.json({ authorized: false, error: "Destino inválido" }, { status: 400 })
   }
 
@@ -48,7 +64,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ authorized: false, error: "Verificación inválida" }, { status: 400 })
     }
 
-    return NextResponse.json({ authorized: true, redirectUrl: destination })
+    return NextResponse.json({ authorized: true, redirectUrl: authorizedDestination })
   } catch (error) {
     console.error("[v0] reCAPTCHA request error:", error)
     return NextResponse.json({ authorized: false, error: "Error de verificación" }, { status: 502 })

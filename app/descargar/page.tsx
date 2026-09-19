@@ -18,6 +18,14 @@ function DownloadContent() {
   const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
+    if (searchParams.get("verified") !== "1") {
+      const query = new URLSearchParams(searchParams.toString())
+      query.delete("verified")
+      const queryString = query.toString()
+      window.location.replace(`/verificar-descargar${queryString ? `?${queryString}` : ""}`)
+      return
+    }
+
     const curlValue = searchParams.get("curl")
     const sourceValue = curlValue ?? searchParams.get("url")
     if (curlValue && !curlValue.startsWith("v1_")) {
