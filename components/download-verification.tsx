@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Turnstile } from "@marsidev/react-turnstile"
+import ReCAPTCHA from "react-google-recaptcha"
 import { ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -10,7 +10,7 @@ type DownloadVerificationProps = {
   accentClassName: string
 }
 
-const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
 
 export function DownloadVerification({ destination, accentClassName }: DownloadVerificationProps) {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
@@ -37,7 +37,7 @@ export function DownloadVerification({ destination, accentClassName }: DownloadV
 
       window.location.assign(result.redirectUrl)
     } catch (verificationError) {
-      console.error("[v0] Turnstile validation error:", verificationError)
+      console.error("[v0] reCAPTCHA validation error:", verificationError)
       setCaptchaToken(null)
       setError("No se pudo verificar. Completa la casilla nuevamente.")
     } finally {
@@ -57,22 +57,22 @@ export function DownloadVerification({ destination, accentClassName }: DownloadV
 
       {siteKey ? (
         <div className="flex justify-center rounded-lg border border-slate-700 bg-slate-950/60 p-4">
-          <Turnstile
-            siteKey={siteKey}
-            onSuccess={(token) => {
+          <ReCAPTCHA
+            sitekey={siteKey}
+            onChange={(token) => {
               setCaptchaToken(token)
               setError(null)
             }}
-            onExpire={() => setCaptchaToken(null)}
-            onError={() => {
+            onExpired={() => setCaptchaToken(null)}
+            onErrored={() => {
               setCaptchaToken(null)
-              setError("No se pudo cargar Turnstile.")
+              setError("No se pudo cargar reCAPTCHA.")
             }}
           />
         </div>
       ) : (
         <p className="rounded-lg border border-red-900/60 bg-red-950/30 p-3 text-sm text-red-200" role="alert">
-          La verificación Turnstile no está configurada.
+          La verificación no está configurada.
         </p>
       )}
 

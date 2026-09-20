@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 
-const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+const RECAPTCHA_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify"
 const ALLOWED_DESTINATIONS = new Set(["/descargar", "/descargar2"])
 
 function getAuthorizedDestination(destination: string) {
@@ -15,10 +15,10 @@ function getAuthorizedDestination(destination: string) {
 }
 
 export async function POST(request: Request) {
-  const secretKey = process.env.TURNSTILE_SECRET_KEY
+  const secretKey = process.env.RECAPTCHA_SECRET_KEY
 
   if (!secretKey) {
-    console.error("[v0] TURNSTILE_SECRET_KEY no está configurada")
+    console.error("[v0] RECAPTCHA_SECRET_KEY no está configurada")
     return NextResponse.json({ authorized: false, error: "Servicio no configurado" }, { status: 503 })
   }
 
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
   const formData = new URLSearchParams({ secret: secretKey, response: token })
 
   try {
-    const verificationResponse = await fetch(TURNSTILE_VERIFY_URL, {
+    const verificationResponse = await fetch(RECAPTCHA_VERIFY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: formData,
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ authorized: true, redirectUrl: authorizedDestination })
   } catch (error) {
-    console.error("[v0] Turnstile request error:", error)
+    console.error("[v0] reCAPTCHA request error:", error)
     return NextResponse.json({ authorized: false, error: "Error de verificación" }, { status: 502 })
   }
 }
