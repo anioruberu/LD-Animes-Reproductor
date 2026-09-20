@@ -56,7 +56,7 @@ export function DownloadVerification({ destination, accentClassName }: DownloadV
       </div>
 
       {siteKey ? (
-        <div className="flex justify-center rounded-lg border border-slate-700 bg-slate-950/60 p-4">
+        <div className="mx-auto flex h-[78px] w-[304px] items-center justify-center overflow-hidden rounded-lg border border-slate-700 bg-slate-950/60">
           <ReCAPTCHA
             sitekey={siteKey}
             onChange={(token) => {
