@@ -63,7 +63,7 @@ export default function HomePage() {
   const handleGoToPlayer = (playerType: 'blue' | 'orange' = 'blue') => {
     if (videoUrl) {
       const encodedUrl = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
-      const route = playerType === 'orange' ? '/r2' : '/r'
+      const route = playerType === 'orange' ? '/reproductor2' : '/reproductor'
       const encodedSubtitles = subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ""
       router.push(`${route}?url=${encodedUrl}${encodedSubtitles}`)
     }
@@ -72,7 +72,7 @@ export default function HomePage() {
   const handleDownload = () => {
     if (videoUrl) {
       const encodedUrl = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
-      router.push(`/${selectedPlayer === 'orange' ? 'd2' : 'd'}?url=${encodedUrl}`)
+      router.push(`/${selectedPlayer === 'orange' ? 'descargar2' : 'descargar'}?url=${encodedUrl}`)
     }
   }
 
@@ -84,7 +84,7 @@ export default function HomePage() {
 
   const getShareUrl = () => {
     if (!videoUrl) return ""
-    const route = selectedPlayer === 'orange' ? '/r2' : '/r'
+    const route = selectedPlayer === 'orange' ? '/reproductor2' : '/reproductor'
     const suffix = subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ""
     const encodedVideo = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
     return `${window.location.origin}${route}?url=${encodedVideo}${suffix}`
@@ -93,7 +93,7 @@ export default function HomePage() {
   const getEmbedCode = () => {
     if (!videoUrl) return ""
     const encodedUrl = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
-    const route = selectedPlayer === 'orange' ? '/r2' : '/r'
+    const route = selectedPlayer === 'orange' ? '/reproductor2' : '/reproductor'
     const encodedSubtitles = subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ""
     const shareUrl = `${window.location.origin}${route}?url=${encodedUrl}${encodedSubtitles}`
     return `<iframe src="${shareUrl}" width="100%" height="600" frameborder="0" allowfullscreen style="border-radius: 8px; border: none;"></iframe>`
@@ -214,7 +214,7 @@ export default function HomePage() {
             }}>Agregar video actual</Button>
             <Button type="button" className="flex-1 bg-indigo-600 hover:bg-indigo-700" disabled={playlistItems.length === 0} onClick={() => {
               const playlist = encodePlaylist(playlistItems)
-              router.push(`${selectedPlayer === "orange" ? "/r2" : "/r"}?playlist=${encodeURIComponent(playlist)}`)
+              router.push(`${selectedPlayer === "orange" ? "/reproductor2" : "/reproductor"}?playlist=${encodeURIComponent(playlist)}`)
             }}>Reproducir playlist ({playlistItems.length})</Button>
           </div>
         </section>
@@ -226,7 +226,7 @@ export default function HomePage() {
               <div className="aspect-video bg-black relative">
                 <iframe
                   key={selectedPlayer}
-                  src={`${window.location.origin}${selectedPlayer === 'orange' ? '/r2' : '/r'}?url=${encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)}${subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ''}`}
+                  src={`${window.location.origin}${selectedPlayer === 'orange' ? '/reproductor2' : '/reproductor'}?url=${encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)}${subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ''}`}
                   className="w-full h-full"
                   allowFullScreen
                   title={selectedPlayer === 'blue' ? 'LD Animes' : 'GokuPlay -Reporductor'}
