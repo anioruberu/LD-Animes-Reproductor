@@ -5,7 +5,7 @@ export function getHuggingFaceToken() {
     __env__?: Record<string, string | undefined>
   }
 
-  return process.env.GokuPlay || runtime.__env__?.GokuPlay || ""
+  return process.env.GokuPlay || runtime.__env__?.GokuPlay || process.env.HF_TOKEN || runtime.__env__?.HF_TOKEN || ""
 }
 
 export function isPrivateHuggingFaceUrl(value: string) {
@@ -27,7 +27,14 @@ export function isHuggingFaceUrl(value: string) {
 }
 
 export function getHuggingFaceProxyUrl(value: string) {
-  return isHuggingFaceUrl(value) ? `/api/huggingface?url=${encodeURIComponent(value)}` : value
+  // El canvas de PDF.js necesita CORS; pasar cualquier URL HTTPS por el proxy.
+  // El proxy solo adjunta el token cuando el destino es Hugging Face.
+  try {
+    const url = new URL(value)
+    return url.protocol === "https:" ? `/api/huggingface?url=${encodeURIComponent(value)}` : value
+  } catch {
+    return value
+  }
 }
 
 export function isPrivateRepositoryPath(value: string) {
