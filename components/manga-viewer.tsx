@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, ChevronRight, Download, Copy, Maximize, BookOpen, Rows3 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Maximize, BookOpen, Rows3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import * as pdfjs from 'pdfjs-dist'
@@ -23,7 +23,6 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   const [readingMode, setReadingMode] = useState<'manga' | 'normal'>('manga')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
   const [pdf, setPdf] = useState<any>(null)
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
   const [inputUrl, setInputUrl] = useState('')
@@ -33,7 +32,7 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   // Cargar PDF
   useEffect(() => {
     let cancelled = false
-    let loadingTask: { destroy: () => Promise<void> } | null = null
+    let loadingTask: pdfjs.PDFDocumentLoadingTask | null = null
 
     const loadPdf = async () => {
       try {
@@ -58,10 +57,7 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
 
         loadingTask = pdfjs.getDocument({ data })
         const loadedPdf = await loadingTask.promise
-        if (cancelled) {
-          await loadedPdf.destroy()
-          return
-        }
+        if (cancelled) return
 
         setPdf(loadedPdf)
         setTotalPages(loadedPdf.numPages)
@@ -133,12 +129,6 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
     document.body.removeChild(link)
   }
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(pdfUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   if (isPreview || !pdfUrl) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
@@ -174,15 +164,9 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
             <div className="rounded-lg border border-slate-700 bg-slate-800/70 p-4 mb-6 text-left">
               <p className="text-gray-300 text-sm mb-2">También puedes usar:</p>
               <code className="text-blue-400 text-xs break-all">/v?curl=TU_URL_PDF</code>
-              <p className="text-slate-500 text-xs mt-2">La pantalla del visor solo ofrece descargar y copiar el enlace; no crea un embed.</p>
+              <p className="text-slate-500 text-xs mt-2">La pantalla del visor ofrece descargar el PDF y verlo directamente; no crea un embed.</p>
             </div>
 
-            <Link href="/">
-              <Button className="w-full" variant="outline">
-                <Home className="w-4 h-4 mr-2" />
-                Ir al inicio
-              </Button>
-            </Link>
           </div>
         </div>
       </div>
@@ -203,25 +187,22 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   }
 
   return (
-    <div ref={viewerRef} className="min-h-screen bg-slate-900 flex flex-col">
-      <div className="bg-slate-800 border-b border-slate-700 p-3 flex justify-end gap-2">
-        <Button size="sm" variant="ghost" onClick={handleDownload} title="Descargar PDF"><Download className="w-4 h-4" /></Button>
-        <Button size="sm" variant="ghost" onClick={handleCopy} title="Copiar URL" className={copied ? 'text-green-400' : ''}><Copy className="w-4 h-4" /></Button>
-        <Button size="sm" variant="ghost" onClick={handleFullscreen} title="Pantalla completa"><Maximize className="w-4 h-4" /></Button>
-      </div>
-      <div className="flex-1 flex items-center justify-center p-2 sm:p-4 overflow-auto min-h-0">
-        {loading ? <div className="text-gray-400">Cargando...</div> : <canvas ref={setCanvas} className="max-w-full max-h-[calc(100vh-150px)] border border-slate-700 rounded shadow-xl" />}
-      </div>
-      <div className="bg-slate-800 border-t border-slate-700 p-3 sm:p-4">
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <Button size="sm" variant="outline" onClick={handlePrevPage} disabled={currentPage === 1 || !pdf} title={readingMode === 'manga' ? 'Página anterior, lectura manga' : 'Página anterior'}><ChevronRight className="w-4 h-4" /></Button>
-          <span className="px-3 py-2 bg-slate-700 rounded text-sm text-white">{currentPage} / {totalPages}</span>
-          <Button size="sm" variant="outline" onClick={handleNextPage} disabled={currentPage === totalPages || !pdf} title={readingMode === 'manga' ? 'Página siguiente, lectura manga' : 'Página siguiente'}><ChevronLeft className="w-4 h-4" /></Button>
-          <div className="h-6 w-px bg-slate-600 mx-1" />
-          <Button size="sm" variant={readingMode === 'manga' ? 'default' : 'outline'} onClick={() => setReadingMode('manga')} title="Lectura de manga"><BookOpen className="w-4 h-4 mr-1" /> Manga</Button>
-          <Button size="sm" variant={readingMode === 'normal' ? 'default' : 'outline'} onClick={() => setReadingMode('normal')} title="Lectura normal"><Rows3 className="w-4 h-4 mr-1" /> Normal</Button>
+    <div ref={viewerRef} className="relative min-h-screen overflow-hidden bg-slate-950">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center p-2 sm:p-3">
+        <div className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-xl border border-slate-700/80 bg-slate-900/90 p-1.5 shadow-lg backdrop-blur-md">
+          <Button size="sm" variant="ghost" onClick={handlePrevPage} disabled={currentPage === 1 || !pdf} title="Página anterior"><ChevronRight className="h-4 w-4" /></Button>
+          <span className="min-w-20 rounded-md bg-slate-800 px-2 py-2 text-center text-xs text-white">{currentPage} / {totalPages}</span>
+          <Button size="sm" variant="ghost" onClick={handleNextPage} disabled={currentPage === totalPages || !pdf} title="Página siguiente"><ChevronLeft className="h-4 w-4" /></Button>
+          <div className="mx-0.5 h-6 w-px bg-slate-700" />
+          <Button size="sm" variant={readingMode === 'manga' ? 'default' : 'ghost'} onClick={() => setReadingMode('manga')} title="Lectura de manga"><BookOpen className="mr-1 h-4 w-4" /> Manga</Button>
+          <Button size="sm" variant={readingMode === 'normal' ? 'default' : 'ghost'} onClick={() => setReadingMode('normal')} title="Lectura normal"><Rows3 className="mr-1 h-4 w-4" /> Normal</Button>
+          <div className="mx-0.5 h-6 w-px bg-slate-700" />
+          <Button size="sm" variant="ghost" onClick={handleDownload} title="Descargar PDF"><Download className="h-4 w-4" /></Button>
+          <Button size="sm" variant="ghost" onClick={handleFullscreen} title="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
         </div>
-        <p className="text-xs text-gray-400 text-center mt-2">{readingMode === 'manga' ? 'Lectura de derecha a izquierda' : 'Lectura normal de arriba hacia abajo'}</p>
+      </div>
+      <div className="flex h-screen w-full items-start justify-center overflow-auto bg-slate-950 pt-16 sm:pt-20">
+        {loading ? <div className="pt-10 text-gray-400">Cargando...</div> : <canvas ref={setCanvas} className="block h-auto w-auto max-w-full border-0 shadow-2xl" />}
       </div>
     </div>
   )
