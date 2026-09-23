@@ -156,7 +156,6 @@ function VideoPlayerContent() {
   src={videoUrl}
   title={videoTitle}
   subtitlesUrl={subtitlesUrl}
-          enableAds={false}
           onError={() => setError("Error al cargar el video")}
           onLoad={() => setIsPlaylistTransition(false)}
           isPlaylistTransition={isPlaylistTransition}

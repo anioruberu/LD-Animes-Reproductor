@@ -18,10 +18,9 @@ interface CustomVideoPlayerProps {
   onEnded?: () => void
   onPlay?: () => void
   isPlaylistTransition?: boolean
-  enableAds?: boolean
 }
 
-export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, onPlay, isPlaylistTransition = false, enableAds = true, forceFullSize = false, subtitlesUrl: manualSubtitlesUrl = null }: CustomVideoPlayerProps) {
+export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, onPlay, isPlaylistTransition = false, forceFullSize = false, subtitlesUrl: manualSubtitlesUrl = null }: CustomVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -566,10 +565,8 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, 
       return
     }
 
-    if (enableAds && !adPlayedRef.current) {
+    if (!adPlayedRef.current) {
       adPlayedRef.current = true
-      video.pause()
-      setIsPlaying(false)
       try {
         const response = await fetch("/api/vast-ad", { cache: "no-store" })
         const data = await response.json()
