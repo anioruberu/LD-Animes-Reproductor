@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useState } from "react"
+import { Suspense, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { CustomVideoPlayerOrange } from "@/components/custom-video-player-orange"
 import { ExternalLink } from "lucide-react"
@@ -17,6 +17,8 @@ function VideoPlayerContent() {
   const [playlist, setPlaylist] = useState<PlaylistItem[]>([])
   const [playlistIndex, setPlaylistIndex] = useState(0)
   const [isPlaylistTransition, setIsPlaylistTransition] = useState(false)
+  const adOpenedRef = useRef(false)
+  const videoAdUrl = "https://troubled-entertainment.com/d.mlFAzvdVGZNKvcZvG_Ux/ueum/9xuhZLUDltkUPFT/cs0fN/TDEGyHNZDdEXtJN/zVQ/1nMtTNIr0aN-Qz"
 
   const extractTitleFromUrl = (url: string): string => {
     try {
@@ -158,6 +160,11 @@ function VideoPlayerContent() {
   subtitlesUrl={subtitlesUrl}
           onError={() => setError("Error al cargar el video")}
           onLoad={() => setIsPlaylistTransition(false)}
+          onPlay={() => {
+            if (window.location.pathname !== "/reproductor2" || adOpenedRef.current) return
+            adOpenedRef.current = true
+            window.open(videoAdUrl, "_blank", "noopener,noreferrer")
+          }}
           isPlaylistTransition={isPlaylistTransition}
           onEnded={() => {
             if (playlist.length > 0) setIsPlaylistTransition(true)
