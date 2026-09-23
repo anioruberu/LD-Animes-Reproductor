@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import ReCAPTCHA from "react-google-recaptcha"
 import { ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,7 +15,18 @@ const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
 export function DownloadVerification({ destination, accentClassName }: DownloadVerificationProps) {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const [isVerifying, setIsVerifying] = useState(false)
+  const [secondsLeft, setSecondsLeft] = useState(10)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (secondsLeft === 0) return
+
+    const timer = window.setInterval(() => {
+      setSecondsLeft((current) => Math.max(0, current - 1))
+    }, 1000)
+
+    return () => window.clearInterval(timer)
+  }, [secondsLeft])
 
   const continueToDownload = async () => {
     if (!captchaToken || isVerifying) return
@@ -78,13 +89,23 @@ export function DownloadVerification({ destination, accentClassName }: DownloadV
 
       {error && <p className="text-center text-sm text-red-300" role="alert">{error}</p>}
 
+      {secondsLeft > 0 && (
+        <p className="text-center text-sm text-slate-400" aria-live="polite">
+          Podrás continuar en {secondsLeft}{" "}{secondsLeft === 1 ? "segundo" : "segundos"}.
+        </p>
+      )}
+
       <Button
         type="button"
         onClick={continueToDownload}
-        disabled={!captchaToken || isVerifying || !siteKey}
+        disabled={!captchaToken || isVerifying || !siteKey || secondsLeft > 0}
         className={`w-full ${accentClassName} text-white font-semibold py-3 disabled:cursor-not-allowed disabled:opacity-50`}
       >
-        {isVerifying ? "Verificando..." : "Verificar y continuar a la descarga"}
+        {isVerifying
+          ? "Verificando..."
+          : secondsLeft > 0
+            ? `Esperar ${secondsLeft}s`
+            : "Verificar y continuar a la descarga"}
       </Button>
     </div>
   )
