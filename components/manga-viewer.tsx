@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, ChevronRight, Download, Copy, ZoomIn, ZoomOut, Home, BookOpen } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Copy, Maximize, BookOpen, Rows3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import * as pdfjs from 'pdfjs-dist'
@@ -20,12 +20,14 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
   const [scale, setScale] = useState(1)
+  const [readingMode, setReadingMode] = useState<'manga' | 'normal'>('manga')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [pdf, setPdf] = useState<any>(null)
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
   const [inputUrl, setInputUrl] = useState('')
+  const viewerRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
   // Cargar PDF
@@ -116,12 +118,10 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
     setCurrentPage((prev) => Math.min(totalPages, prev + 1))
   }
 
-  const handleZoomIn = () => {
-    setScale((prev) => Math.min(3, prev + 0.2))
-  }
-
-  const handleZoomOut = () => {
-    setScale((prev) => Math.max(0.5, prev - 0.2))
+  const handleFullscreen = async () => {
+    if (!viewerRef.current) return
+    if (document.fullscreenElement) await document.exitFullscreen()
+    else await viewerRef.current.requestFullscreen()
   }
 
   const handleDownload = () => {
@@ -203,111 +203,25 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col">
-      {/* Barra superior */}
-      <div className="bg-slate-800 border-b border-slate-700 p-4">
-        <div className="flex items-center justify-between gap-4">
-          <Link href="/">
-            <Button size="sm" variant="ghost">
-              <Home className="w-4 h-4" />
-            </Button>
-          </Link>
-
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleDownload}
-              title="Descargar PDF"
-            >
-              <Download className="w-4 h-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleCopy}
-              title={copied ? 'Copiado!' : 'Copiar URL'}
-              className={copied ? 'text-green-400' : ''}
-            >
-              <Copy className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
+    <div ref={viewerRef} className="min-h-screen bg-slate-900 flex flex-col">
+      <div className="bg-slate-800 border-b border-slate-700 p-3 flex justify-end gap-2">
+        <Button size="sm" variant="ghost" onClick={handleDownload} title="Descargar PDF"><Download className="w-4 h-4" /></Button>
+        <Button size="sm" variant="ghost" onClick={handleCopy} title="Copiar URL" className={copied ? 'text-green-400' : ''}><Copy className="w-4 h-4" /></Button>
+        <Button size="sm" variant="ghost" onClick={handleFullscreen} title="Pantalla completa"><Maximize className="w-4 h-4" /></Button>
       </div>
-
-      {/* Área de visualización */}
-      <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-auto">
-        {loading ? (
-          <div className="text-gray-400">Cargando...</div>
-        ) : (
-          <div className="flex justify-center items-center max-w-full">
-            <canvas
-              ref={setCanvas}
-              className="max-w-full max-h-[calc(100vh-180px)] border border-slate-700 rounded"
-            />
-          </div>
-        )}
+      <div className="flex-1 flex items-center justify-center p-2 sm:p-4 overflow-auto min-h-0">
+        {loading ? <div className="text-gray-400">Cargando...</div> : <canvas ref={setCanvas} className="max-w-full max-h-[calc(100vh-150px)] border border-slate-700 rounded shadow-xl" />}
       </div>
-
-      {/* Controles */}
-      <div className="bg-slate-800 border-t border-slate-700 p-4">
-        <div className="flex items-center justify-between gap-4">
-          {/* Botones de navegación */}
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handlePrevPage}
-              disabled={currentPage === 1 || !pdf}
-              title="Página anterior (lectura RTL)"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-
-            <div className="flex items-center gap-2 px-4 py-2 bg-slate-700 rounded text-sm text-white min-w-[120px] justify-center">
-              <span>{currentPage}</span>
-              <span className="text-gray-400">/</span>
-              <span>{totalPages}</span>
-            </div>
-
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages || !pdf}
-              title="Página siguiente (lectura RTL)"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-          </div>
-
-          {/* Zoom */}
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleZoomOut}
-              disabled={scale <= 0.5}
-            >
-              <ZoomOut className="w-4 h-4" />
-            </Button>
-
-            <div className="flex items-center gap-2 px-3 py-2 bg-slate-700 rounded text-sm text-white min-w-[80px] justify-center">
-              {Math.round(scale * 100)}%
-            </div>
-
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleZoomIn}
-              disabled={scale >= 3}
-            >
-              <ZoomIn className="w-4 h-4" />
-            </Button>
-          </div>
+      <div className="bg-slate-800 border-t border-slate-700 p-3 sm:p-4">
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Button size="sm" variant="outline" onClick={handlePrevPage} disabled={currentPage === 1 || !pdf} title={readingMode === 'manga' ? 'Página anterior, lectura manga' : 'Página anterior'}><ChevronRight className="w-4 h-4" /></Button>
+          <span className="px-3 py-2 bg-slate-700 rounded text-sm text-white">{currentPage} / {totalPages}</span>
+          <Button size="sm" variant="outline" onClick={handleNextPage} disabled={currentPage === totalPages || !pdf} title={readingMode === 'manga' ? 'Página siguiente, lectura manga' : 'Página siguiente'}><ChevronLeft className="w-4 h-4" /></Button>
+          <div className="h-6 w-px bg-slate-600 mx-1" />
+          <Button size="sm" variant={readingMode === 'manga' ? 'default' : 'outline'} onClick={() => setReadingMode('manga')} title="Lectura de manga"><BookOpen className="w-4 h-4 mr-1" /> Manga</Button>
+          <Button size="sm" variant={readingMode === 'normal' ? 'default' : 'outline'} onClick={() => setReadingMode('normal')} title="Lectura normal"><Rows3 className="w-4 h-4 mr-1" /> Normal</Button>
         </div>
-
-        <p className="text-xs text-gray-400 text-center mt-2">Lectura de derecha a izquierda (Manga)</p>
+        <p className="text-xs text-gray-400 text-center mt-2">{readingMode === 'manga' ? 'Lectura de derecha a izquierda' : 'Lectura normal de arriba hacia abajo'}</p>
       </div>
     </div>
   )
