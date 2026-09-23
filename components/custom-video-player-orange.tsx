@@ -46,9 +46,9 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, 
   const [subtitles, setSubtitles] = useState<Array<{ start: number; end: number; text: string }>>([])
   const [currentSubtitle, setCurrentSubtitle] = useState<string | null>(null)
   const [isAdPlaying, setIsAdPlaying] = useState(false)
+  const [adMediaUrl, setAdMediaUrl] = useState<string | null>(null)
   const adPlayedRef = useRef(false)
   const adVideoRef = useRef<HTMLVideoElement | null>(null)
-  const adMediaUrl = "https://www.silent-basis.pro/301305/351385/1161467_0556ey.mp4"
 
   const controlsTimeoutRef = useRef<NodeJS.Timeout>()
   const lastTapRef = useRef<number>(0)
@@ -553,21 +553,35 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, 
     setCurrentSubtitle(currentSub ? currentSub.text : null)
   }, [currentTime, subtitles])
   
-  const togglePlay = () => {
+  const togglePlay = async () => {
     const video = videoRef.current
     if (!video) return
 
     if (isPlaying) {
       video.pause()
-    } else if (!adPlayedRef.current) {
-      adPlayedRef.current = true
-      setIsAdPlaying(true)
-      void adVideoRef.current?.play()
-    } else {
-      onPlay?.()
-      void video.play()
+      setIsPlaying(false)
+      return
     }
-    setIsPlaying(!isPlaying)
+
+    if (!adPlayedRef.current) {
+      adPlayedRef.current = true
+      try {
+        const response = await fetch("/api/vast-ad", { cache: "no-store" })
+        const data = await response.json()
+        if (response.ok && data.mediaUrl) {
+          setAdMediaUrl(data.mediaUrl)
+          setIsAdPlaying(true)
+          setIsPlaying(true)
+          return
+        }
+      } catch {
+        // Si el anuncio no responde, continúa con el video principal.
+      }
+    }
+
+    onPlay?.()
+    await video.play()
+    setIsPlaying(true)
   }
 
   const handleSeek = (value: number[]) => {
@@ -862,7 +876,7 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, 
         <div className="absolute inset-0 z-20 bg-black" onClick={(event) => event.stopPropagation()}>
           <video
             ref={adVideoRef}
-            src={adMediaUrl}
+            src={adMediaUrl ?? undefined}
             className="h-full w-full object-contain"
             autoPlay
             playsInline
