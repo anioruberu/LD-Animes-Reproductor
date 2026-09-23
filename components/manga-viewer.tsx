@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, type TouchEvent, type TouchList } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight, Download, Maximize, BookOpen, Rows3, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -30,6 +30,8 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   const documentScrollRef = useRef<HTMLDivElement>(null)
   const pageCanvasRefs = useRef<Record<number, HTMLCanvasElement | null>>({})
   const currentPageRef = useRef(1)
+  const pinchStartDistanceRef = useRef<number | null>(null)
+  const pinchStartScaleRef = useRef(1)
   const router = useRouter()
 
   // Cargar PDF
@@ -139,16 +141,14 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
     if (!container || readingMode !== 'normal' || loading) return
 
     const observer = new IntersectionObserver((entries) => {
-      const visible = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
-      if (!visible) return
+      const centered = entries.find((entry) => entry.isIntersecting)
+      if (!centered) return
 
-      const pageNumber = Number((visible.target as HTMLElement).dataset.page)
+      const pageNumber = Number((centered.target as HTMLElement).dataset.page)
       if (!pageNumber || pageNumber === currentPageRef.current) return
       currentPageRef.current = pageNumber
       setCurrentPage(pageNumber)
-    }, { root: container, threshold: [0.35, 0.6, 0.85] })
+    }, { root: container, rootMargin: '-45% 0px -45% 0px', threshold: 0.01 })
 
     Object.entries(pageCanvasRefs.current).forEach(([pageNumber, canvas]) => {
       if (canvas) {
@@ -185,6 +185,29 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
     if (!viewerRef.current) return
     if (document.fullscreenElement) await document.exitFullscreen()
     else await viewerRef.current.requestFullscreen()
+  }
+
+  const getTouchDistance = (touches: TouchList) => {
+    const first = touches[0]
+    const second = touches[1]
+    return Math.hypot(second.clientX - first.clientX, second.clientY - first.clientY)
+  }
+
+  const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length !== 2) return
+    pinchStartDistanceRef.current = getTouchDistance(event.touches)
+    pinchStartScaleRef.current = scale
+  }
+
+  const handleTouchMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length !== 2 || pinchStartDistanceRef.current === null) return
+    event.preventDefault()
+    const ratio = getTouchDistance(event.touches) / pinchStartDistanceRef.current
+    setScale(Math.min(3, Math.max(1, pinchStartScaleRef.current * ratio)))
+  }
+
+  const handleTouchEnd = () => {
+    pinchStartDistanceRef.current = null
   }
 
   const handleDownload = async () => {
@@ -266,7 +289,14 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   const progress = totalPages > 0 ? Math.min(100, Math.max(0, (currentPage / totalPages) * 100)) : 0
 
   return (
-    <div ref={viewerRef} className="relative min-h-screen overflow-hidden bg-slate-950">
+    <div
+      ref={viewerRef}
+      className="relative min-h-screen overflow-hidden bg-slate-950 touch-pan-y"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+    >
       <div className="pointer-events-none fixed inset-x-0 top-0 z-30 px-3 pt-2 sm:px-5 sm:pt-3">
         <div className="mx-auto h-1.5 w-full max-w-3xl overflow-hidden rounded-full bg-slate-800/90 shadow-lg ring-1 ring-slate-700/70" role="progressbar" aria-label="Progreso de lectura" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
           <div className="h-full rounded-full bg-blue-500 transition-[width] duration-200" style={{ width: `${progress}%` }} />
@@ -309,6 +339,7 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
                 key={pageNumber}
                 ref={(element) => { pageCanvasRefs.current[pageNumber] = element }}
                 className={readingMode === 'normal' ? 'block h-auto w-full border-0 shadow-lg' : 'block h-full w-full object-contain border-0'}
+                style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}
               />
             ))}
           </div>
