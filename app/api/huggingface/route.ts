@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
   try {
     upstream = await fetch(target, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(range ? { Range: range } : {}),
     },
     redirect: "follow",

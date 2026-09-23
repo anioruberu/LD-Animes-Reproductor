@@ -4,13 +4,14 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Play, Copy, ExternalLink, Download } from "lucide-react"
+import { Play, Copy, ExternalLink, Download, FileText } from "lucide-react"
 import { encodeVideoUrl } from "@/lib/url-codec"
 import { VideoLibrary } from "@/components/video-library"
 import { encodePlaylist, writeVideoLibrary, readVideoLibrary, type PlaylistItem } from "@/lib/playlist"
 
 export default function HomePage() {
   const [url, setUrl] = useState("")
+  const [contentMode, setContentMode] = useState<"video" | "pdf">("video")
   const [subtitlesUrl, setSubtitlesUrl] = useState("")
   const [encodeUrl, setEncodeUrl] = useState(false)
   const [error, setError] = useState("")
@@ -60,6 +61,20 @@ export default function HomePage() {
   const [playlistItems, setPlaylistItems] = useState<PlaylistItem[]>([])
   const [editingLibraryIndex, setEditingLibraryIndex] = useState<number | null>(null)
 
+  const handleOpenPdf = (event: React.FormEvent) => {
+    event.preventDefault()
+    const value = url.trim()
+    if (!value) {
+      setError("Por favor ingresa una URL de PDF")
+      return
+    }
+    if (!/^https:\/\//i.test(value)) {
+      setError("La URL debe comenzar con https://")
+      return
+    }
+    router.push(`/v?url=${encodeURIComponent(value)}`)
+  }
+
   const handleGoToPlayer = (playerType: 'blue' | 'orange' = 'blue') => {
     if (videoUrl) {
       const encodedUrl = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
@@ -108,8 +123,16 @@ export default function HomePage() {
               <Play className="h-8 w-8 text-white fill-white" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Reproductor de Video</h1>
-          <p className="text-gray-400">Ingresa una URL de video compatible</p>
+          <h1 className="text-3xl font-bold text-white mb-2">LD Animes</h1>
+          <p className="text-gray-400">Elige qué quieres abrir</p>
+          <div className="mt-5 grid grid-cols-2 gap-2 rounded-lg bg-slate-800 p-1">
+            <button type="button" onClick={() => { setContentMode("video"); setError("") }} className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${contentMode === "video" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"}`}>
+              <Play className="mr-2 inline h-4 w-4" />Videos
+            </button>
+            <button type="button" onClick={() => { setContentMode("pdf"); setError("") }} className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${contentMode === "pdf" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"}`}>
+              <FileText className="mr-2 inline h-4 w-4" />PDF / Manga
+            </button>
+          </div>
         </div>
 
         <VideoLibrary
@@ -130,7 +153,20 @@ export default function HomePage() {
           setError("")
         }}
       />
-  <form onSubmit={handleSubmit} className="space-y-4">
+  {contentMode === "pdf" ? (
+          <form onSubmit={handleOpenPdf} className="mt-6 space-y-4">
+            <div>
+              <label htmlFor="pdf-url" className="mb-2 block text-sm font-medium text-gray-300">URL del archivo PDF</label>
+              <Input id="pdf-url" type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://huggingface.co/anioruberu/mp4/resolve/main/01.pdf" className="w-full bg-slate-800 border-slate-700 text-white placeholder-gray-500" />
+              <p className="mt-2 text-xs text-slate-500">Compatible con archivos públicos y privados de Hugging Face usando la configuración segura del servidor.</p>
+            </div>
+            {error && <div className="rounded-lg border border-red-800 bg-red-900/20 p-3 text-sm text-red-300">{error}</div>}
+            <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"><FileText className="mr-2 h-4 w-4" />Abrir PDF como manga</Button>
+            <p className="text-center text-xs text-slate-500">También puedes compartirlo como <code>/v?curl=URL</code>. No se genera embed para PDFs.</p>
+          </form>
+        ) : null}
+
+  <form onSubmit={handleSubmit} className={`space-y-4 ${contentMode === "pdf" ? "hidden" : ""}`}>
           <div>
             <label htmlFor="url" className="block text-sm font-medium text-gray-300 mb-2">
               URL del Video
@@ -189,7 +225,7 @@ export default function HomePage() {
           </Button>
         </form>
 
-        <section className="mt-6 rounded-xl border border-indigo-500/30 bg-indigo-950/20 p-4">
+        <section className={`${contentMode === "pdf" ? "hidden" : ""} mt-6 rounded-xl border border-indigo-500/30 bg-indigo-950/20 p-4`}>
           <div className="mb-3">
             <h2 className="text-sm font-semibold text-white">Playlist</h2>
             <p className="mt-1 text-xs text-slate-400">Agrega varios videos para reproducirlos automáticamente, de forma independiente de la biblioteca local.</p>
@@ -219,7 +255,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {videoUrl && showEmbedOptions && (
+        {contentMode === "video" && videoUrl && showEmbedOptions && (
           <div className="mt-8 space-y-4">
             {/* Embed Preview */}
             <div className="bg-slate-800/50 rounded-lg border border-slate-700 overflow-hidden">
