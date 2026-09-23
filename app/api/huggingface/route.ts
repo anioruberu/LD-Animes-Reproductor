@@ -5,8 +5,16 @@ export const runtime = "edge"
 
 function isAllowedTarget(value: string) {
   try {
-    const target = new URL(value)
-    return target.protocol === "https:" && (target.hostname === "huggingface.co" || target.hostname.endsWith(".huggingface.co"))
+    return new URL(value).protocol === "https:"
+  } catch {
+    return false
+  }
+}
+
+function isHuggingFaceTarget(value: string) {
+  try {
+    const hostname = new URL(value).hostname
+    return hostname === "huggingface.co" || hostname.endsWith(".huggingface.co")
   } catch {
     return false
   }
@@ -21,18 +29,21 @@ export async function GET(request: NextRequest) {
   }
 
   const target = new URL(targetValue)
-  target.searchParams.set("download", "true")
-  const headers = new Headers()
+  if (isHuggingFaceTarget(targetValue)) {
+    target.searchParams.set("download", "true")
+  }
   const range = request.headers.get("range")
-  if (range) headers.set("range", range)
+  const upstreamHeaders: Record<string, string> = {
+    ...(range ? { Range: range } : {}),
+  }
+  if (token && isHuggingFaceTarget(targetValue)) {
+    upstreamHeaders.Authorization = `Bearer ${token}`
+  }
 
   let upstream: Response
   try {
     upstream = await fetch(target, {
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(range ? { Range: range } : {}),
-    },
+    headers: upstreamHeaders,
     redirect: "follow",
     cache: "no-store",
     })
