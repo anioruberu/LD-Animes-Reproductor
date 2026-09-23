@@ -26,6 +26,7 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   const [pdf, setPdf] = useState<any>(null)
   const [inputUrl, setInputUrl] = useState('')
   const viewerRef = useRef<HTMLDivElement>(null)
+  const documentScrollRef = useRef<HTMLDivElement>(null)
   const pageCanvasRefs = useRef<Record<number, HTMLCanvasElement | null>>({})
   const router = useRouter()
 
@@ -107,6 +108,63 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
 
     renderPages()
   }, [pdf, currentPage, readingMode, scale])
+
+  const getVisiblePage = () => {
+    const container = documentScrollRef.current
+    if (!container || totalPages === 0) return currentPage
+
+    const center = container.getBoundingClientRect().top + container.clientHeight / 2
+    let closestPage = currentPage
+    let closestDistance = Number.POSITIVE_INFINITY
+
+    for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {
+      const canvas = pageCanvasRefs.current[pageNumber]
+      if (!canvas) continue
+      const rect = canvas.getBoundingClientRect()
+      const distance = Math.abs(rect.top + rect.height / 2 - center)
+      if (distance < closestDistance) {
+        closestDistance = distance
+        closestPage = pageNumber
+      }
+    }
+
+    return closestPage
+  }
+
+  useEffect(() => {
+    const container = documentScrollRef.current
+    if (!container || readingMode !== 'normal' || loading) return
+
+    let frame = 0
+    const updateVisiblePage = () => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        setCurrentPage(getVisiblePage())
+      })
+    }
+
+    updateVisiblePage()
+    container.addEventListener('scroll', updateVisiblePage, { passive: true })
+    window.addEventListener('resize', updateVisiblePage)
+
+    return () => {
+      cancelAnimationFrame(frame)
+      container.removeEventListener('scroll', updateVisiblePage)
+      window.removeEventListener('resize', updateVisiblePage)
+    }
+  }, [readingMode, loading, totalPages])
+
+  const switchReadingMode = (mode: 'manga' | 'normal') => {
+    const pageToKeep = readingMode === 'normal' ? getVisiblePage() : currentPage
+    setCurrentPage(pageToKeep)
+    setReadingMode(mode)
+
+    if (mode === 'normal') {
+      requestAnimationFrame(() => {
+        pageCanvasRefs.current[pageToKeep]?.scrollIntoView({ block: 'center' })
+      })
+    }
+  }
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(1, prev - 1))
@@ -199,8 +257,8 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
             </>
           )}
           <div className="my-1 h-px w-6 bg-slate-700" />
-          <Button size="icon" variant={readingMode === 'manga' ? 'default' : 'ghost'} onClick={() => setReadingMode('manga')} title="Lectura manga" aria-label="Lectura manga"><BookOpen className="h-4 w-4" /></Button>
-          <Button size="icon" variant={readingMode === 'normal' ? 'default' : 'ghost'} onClick={() => setReadingMode('normal')} title="Lectura normal de arriba hacia abajo" aria-label="Lectura normal de arriba hacia abajo"><Rows3 className="h-4 w-4" /></Button>
+          <Button size="icon" variant={readingMode === 'manga' ? 'default' : 'ghost'} onClick={() => switchReadingMode('manga')} title="Lectura manga" aria-label="Lectura manga"><BookOpen className="h-4 w-4" /></Button>
+          <Button size="icon" variant={readingMode === 'normal' ? 'default' : 'ghost'} onClick={() => switchReadingMode('normal')} title="Lectura normal de arriba hacia abajo" aria-label="Lectura normal de arriba hacia abajo"><Rows3 className="h-4 w-4" /></Button>
           <div className="my-1 h-px w-6 bg-slate-700" />
           <Button size="icon" variant="ghost" onClick={handleDownload} title="Descargar PDF" aria-label="Descargar PDF"><Download className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
@@ -209,7 +267,7 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
       <div className="pointer-events-none absolute right-3 top-3 z-20 rounded-full border border-slate-600/80 bg-slate-900/90 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-md sm:right-5 sm:top-5 sm:px-4 sm:py-2 sm:text-sm">
         {currentPage} / {totalPages}
       </div>
-      <div className={`h-screen w-full bg-slate-950 ${readingMode === 'normal' ? 'overflow-y-auto pt-20' : 'flex items-center justify-center overflow-hidden'}`}>
+      <div ref={documentScrollRef} className={`h-screen w-full bg-slate-950 ${readingMode === 'normal' ? 'overflow-y-auto pt-20' : 'flex items-center justify-center overflow-hidden'}`}>
         {loading ? <div className="text-gray-400">Cargando...</div> : (
           <div className={readingMode === 'normal' ? 'mx-auto flex w-full max-w-4xl flex-col items-center gap-2 px-2 pb-8' : 'flex h-full w-full items-center justify-center'}>
             {(readingMode === 'normal' ? Array.from({ length: totalPages }, (_, index) => index + 1) : [currentPage]).map((pageNumber) => (
