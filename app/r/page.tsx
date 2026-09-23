@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useRef, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { CustomVideoPlayer } from "@/components/custom-video-player"
 import { ExternalLink } from "lucide-react"
@@ -8,11 +8,8 @@ import { decodeVideoUrl, encodeVideoUrl } from "@/lib/url-codec"
 import { decodePlaylist, type PlaylistItem } from "@/lib/playlist"
 import { getHuggingFaceProxyUrl } from "@/lib/huggingface"
 
-const HILLTOP_VIDEO_AD_URL = "https://troubled-entertainment.com/d.mlFAzvdVGZNKvcZvG_Ux/ueum/9xuhZLUDltkUPFT/cs0fN/TDEGyHNZDdEXtJN/zVQ/1nMtTNIr0aN-Qz"
-
 function VideoPlayerContent() {
   const searchParams = useSearchParams()
-  const hilltopAdOpenedRef = useRef(false)
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const [subtitlesUrl, setSubtitlesUrl] = useState<string | null>(null)
   const [videoTitle, setVideoTitle] = useState<string>("LD Animes - Reproductor")
@@ -159,11 +156,6 @@ function VideoPlayerContent() {
   src={videoUrl}
   title={videoTitle}
           subtitlesUrl={subtitlesUrl}
-          onPlay={() => {
-            if (hilltopAdOpenedRef.current || !["/reproductor", "/reproductor2"].includes(window.location.pathname)) return
-            hilltopAdOpenedRef.current = true
-            window.open(HILLTOP_VIDEO_AD_URL, "_blank", "noopener,noreferrer")
-          }}
           onError={() => setError("Error al cargar el video")}
 onLoad={() => setIsPlaylistTransition(false)}
 isPlaylistTransition={isPlaylistTransition}
