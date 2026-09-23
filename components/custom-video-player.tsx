@@ -46,6 +46,8 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
   const [currentSubtitle, setCurrentSubtitle] = useState<string | null>(null)
   const [isAdPlaying, setIsAdPlaying] = useState(false)
   const [adMediaUrl, setAdMediaUrl] = useState<string | null>(null)
+  const [adCurrentTime, setAdCurrentTime] = useState(0)
+  const [adDuration, setAdDuration] = useState(0)
   const adPlayedRef = useRef(false)
   const adVideoRef = useRef<HTMLVideoElement | null>(null)
 
@@ -893,6 +895,8 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
             playsInline
             muted={false}
             controls={false}
+            onLoadedMetadata={(event) => setAdDuration(event.currentTarget.duration)}
+            onTimeUpdate={(event) => setAdCurrentTime(event.currentTarget.currentTime)}
             onEnded={() => {
               setIsAdPlaying(false)
               setIsPlaying(false)
@@ -907,6 +911,26 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
             }}
           />
           <span className="absolute left-3 top-3 rounded bg-black/70 px-2 py-1 text-xs text-white">Publicidad</span>
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent px-3 pb-3 pt-10">
+            <input
+              type="range"
+              min={0}
+              max={adDuration || 0}
+              step={0.1}
+              value={Math.min(adCurrentTime, adDuration || 0)}
+              onChange={(event) => {
+                const time = Number(event.target.value)
+                if (adVideoRef.current) adVideoRef.current.currentTime = time
+                setAdCurrentTime(time)
+              }}
+              className="h-1 w-full cursor-pointer accent-blue-500"
+              aria-label="Progreso del anuncio"
+            />
+            <div className="mt-1 flex items-center justify-between text-xs font-medium text-white">
+              <span>{formatTime(adCurrentTime)}</span>
+              <span>{formatTime(adDuration)}</span>
+            </div>
+          </div>
         </div>
       )}
       <video
