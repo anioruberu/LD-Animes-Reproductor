@@ -16,10 +16,11 @@ interface CustomVideoPlayerProps {
   forceFullSize?: boolean
   subtitlesUrl?: string | null
   onEnded?: () => void
+  onPlay?: () => void
   isPlaylistTransition?: boolean
 }
 
-export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, isPlaylistTransition = false, forceFullSize = false, subtitlesUrl: manualSubtitlesUrl = null }: CustomVideoPlayerProps) {
+export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, onPlay, isPlaylistTransition = false, forceFullSize = false, subtitlesUrl: manualSubtitlesUrl = null }: CustomVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -854,7 +855,10 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, 
         className="w-full h-full cursor-pointer transition-all duration-200"
         style={{ objectFit: isFillScreen ? 'fill' : 'contain' }}
         onClick={handleVideoClick}
-        onPlay={() => setIsPlaying(true)}
+        onPlay={() => {
+    setIsPlaying(true)
+    onPlay?.()
+  }}
         onPause={() => setIsPlaying(false)}
         autoPlay={false}
         preload="metadata"
