@@ -34,7 +34,13 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
       try {
         setLoading(true)
         setError(null)
-        const pdf = await pdfjs.getDocument({ url: getHuggingFaceProxyUrl(pdfUrl) }).promise
+        const pdf = await pdfjs.getDocument({
+          url: getHuggingFaceProxyUrl(pdfUrl),
+          // Algunos servidores (incluido Hugging Face) no responden correctamente
+          // a las solicitudes Range que PDF.js hace por defecto.
+          disableRange: true,
+          disableStream: true,
+        }).promise
         setPdf(pdf)
         setTotalPages(pdf.numPages)
         setCurrentPage(1)

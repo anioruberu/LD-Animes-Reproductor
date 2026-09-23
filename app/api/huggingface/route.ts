@@ -60,8 +60,15 @@ export async function GET(request: NextRequest) {
     const value = upstream.headers.get(name)
     if (value) responseHeaders.set(name, value)
   }
+
+  // Algunos enlaces de resolución entregan octet-stream aunque el archivo sea PDF.
+  // PDF.js necesita una respuesta binaria consistente para poder leerla.
+  if (target.pathname.toLowerCase().endsWith(".pdf") && !responseHeaders.has("content-type")) {
+    responseHeaders.set("content-type", "application/pdf")
+  }
   responseHeaders.set("Cache-Control", "private, no-store")
   responseHeaders.set("Access-Control-Allow-Origin", "*")
+  responseHeaders.set("Access-Control-Expose-Headers", "Content-Length, Content-Range, Accept-Ranges, Content-Disposition")
 
   return new Response(upstream.body, {
     status: upstream.status,
