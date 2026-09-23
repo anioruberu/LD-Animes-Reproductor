@@ -191,7 +191,7 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   return (
     <div ref={viewerRef} className="relative min-h-screen overflow-hidden bg-slate-950">
       <div className="pointer-events-none absolute inset-y-0 left-2 z-10 flex items-center sm:left-4">
-        <div className="pointer-events-auto flex flex-col items-center gap-1 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-1.5 shadow-2xl backdrop-blur-md sm:gap-2 sm:p-2">
+        <div className={`pointer-events-auto flex flex-col items-center gap-1 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-1.5 shadow-2xl backdrop-blur-md sm:gap-2 sm:p-2 ${readingMode === 'manga' ? 'origin-left scale-[0.82]' : ''}`}>
           {readingMode === 'manga' && (
             <>
               <Button size="icon" variant="ghost" onClick={handlePrevPage} disabled={currentPage === 1 || !pdf} title="Página anterior" aria-label="Página anterior"><ChevronRight className="h-4 w-4" /></Button>
