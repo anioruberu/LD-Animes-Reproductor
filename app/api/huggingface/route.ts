@@ -3,12 +3,10 @@ import { getHuggingFaceToken } from "@/lib/huggingface"
 
 export const runtime = "edge"
 
-const PRIVATE_PREFIX = "/anioruberu/mp4/"
-
 function isAllowedTarget(value: string) {
   try {
     const target = new URL(value)
-    return target.protocol === "https:" && target.hostname === "huggingface.co" && target.pathname.startsWith(PRIVATE_PREFIX)
+    return target.protocol === "https:" && (target.hostname === "huggingface.co" || target.hostname.endsWith(".huggingface.co"))
   } catch {
     return false
   }
@@ -18,7 +16,7 @@ export async function GET(request: NextRequest) {
   const targetValue = request.nextUrl.searchParams.get("url")
   const token = getHuggingFaceToken()
 
-  if (!targetValue || !token || !isAllowedTarget(targetValue)) {
+  if (!targetValue || !isAllowedTarget(targetValue)) {
     return new Response("Not found", { status: 404 })
   }
 
