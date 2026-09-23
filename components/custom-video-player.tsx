@@ -18,9 +18,10 @@ interface CustomVideoPlayerProps {
   onEnded?: () => void
   onPlay?: () => void
   isPlaylistTransition?: boolean
+  showAds?: boolean
 }
 
-export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay, isPlaylistTransition = false, forceFullSize = false, subtitlesUrl: manualSubtitlesUrl = null }: CustomVideoPlayerProps) {
+export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay, isPlaylistTransition = false, showAds = true, forceFullSize = false, subtitlesUrl: manualSubtitlesUrl = null }: CustomVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -566,6 +567,10 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
     setCurrentSubtitle(currentSub ? currentSub.text : null)
   }, [currentTime, subtitles])
   
+  useEffect(() => {
+    if (isAdPlaying) videoRef.current?.pause()
+  }, [isAdPlaying])
+
   const togglePlay = async () => {
     const video = videoRef.current
     if (!video) return
@@ -576,8 +581,9 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
       return
     }
 
-    if (!adPlayedRef.current) {
+    if (showAds && !adPlayedRef.current) {
       adPlayedRef.current = true
+      video.pause()
       try {
         const response = await fetch("/api/vast-ad", { cache: "no-store" })
         const data = await response.json()
