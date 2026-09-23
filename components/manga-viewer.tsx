@@ -28,6 +28,7 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   const viewerRef = useRef<HTMLDivElement>(null)
   const documentScrollRef = useRef<HTMLDivElement>(null)
   const pageCanvasRefs = useRef<Record<number, HTMLCanvasElement | null>>({})
+  const currentPageRef = useRef(1)
   const router = useRouter()
 
   // Cargar PDF
@@ -62,6 +63,7 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
 
         setPdf(loadedPdf)
         setTotalPages(loadedPdf.numPages)
+        currentPageRef.current = 1
         setCurrentPage(1)
       } catch (err) {
         if (!cancelled) {
@@ -107,7 +109,7 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
     }
 
     renderPages()
-  }, [pdf, currentPage, readingMode, scale])
+  }, [pdf, readingMode, scale, readingMode === 'manga' ? currentPage : null])
 
   const getVisiblePage = () => {
     const container = documentScrollRef.current
@@ -135,27 +137,31 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
     const container = documentScrollRef.current
     if (!container || readingMode !== 'normal' || loading) return
 
-    let frame = 0
-    const updateVisiblePage = () => {
-      cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(() => {
-        setCurrentPage(getVisiblePage())
-      })
-    }
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
+      if (!visible) return
 
-    updateVisiblePage()
-    container.addEventListener('scroll', updateVisiblePage, { passive: true })
-    window.addEventListener('resize', updateVisiblePage)
+      const pageNumber = Number((visible.target as HTMLElement).dataset.page)
+      if (!pageNumber || pageNumber === currentPageRef.current) return
+      currentPageRef.current = pageNumber
+      setCurrentPage(pageNumber)
+    }, { root: container, threshold: [0.35, 0.6, 0.85] })
 
-    return () => {
-      cancelAnimationFrame(frame)
-      container.removeEventListener('scroll', updateVisiblePage)
-      window.removeEventListener('resize', updateVisiblePage)
-    }
+    Object.entries(pageCanvasRefs.current).forEach(([pageNumber, canvas]) => {
+      if (canvas) {
+        canvas.dataset.page = pageNumber
+        observer.observe(canvas)
+      }
+    })
+
+    return () => observer.disconnect()
   }, [readingMode, loading, totalPages])
 
   const switchReadingMode = (mode: 'manga' | 'normal') => {
     const pageToKeep = readingMode === 'normal' ? getVisiblePage() : currentPage
+    currentPageRef.current = pageToKeep
     setCurrentPage(pageToKeep)
     setReadingMode(mode)
 
@@ -264,7 +270,7 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
           <Button size="icon" variant="ghost" onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
         </div>
       </div>
-      <div className="pointer-events-none absolute right-3 top-3 z-20 rounded-full border border-slate-600/80 bg-slate-900/90 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-md sm:right-5 sm:top-5 sm:px-4 sm:py-2 sm:text-sm">
+      <div className="pointer-events-none fixed right-3 top-3 z-30 rounded-full border border-slate-600/80 bg-slate-900/90 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-md sm:right-5 sm:top-5 sm:px-4 sm:py-2 sm:text-sm">
         {currentPage} / {totalPages}
       </div>
       <div ref={documentScrollRef} className={`h-screen w-full bg-slate-950 ${readingMode === 'normal' ? 'overflow-y-auto pt-20' : 'flex items-center justify-center overflow-hidden'}`}>
