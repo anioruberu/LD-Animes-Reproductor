@@ -163,8 +163,9 @@ function VideoPlayerContent() {
             if (playlist.length > 0) setIsPlaylistTransition(true)
             setPlaylistIndex((index) => playlist.length > 0 ? (index + 1) % playlist.length : index)
           }}
-          forceFullSize={true}
-        />
+  forceFullSize={true}
+          showAds={false}
+          />
       </div>
     </div>
   )

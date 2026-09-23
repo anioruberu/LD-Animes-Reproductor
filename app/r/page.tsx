@@ -164,6 +164,7 @@ onEnded={() => {
   setPlaylistIndex((index) => playlist.length > 0 ? (index + 1) % playlist.length : index)
 }}
   forceFullSize={true}
+          showAds={false}
         />
       </div>
     </div>
