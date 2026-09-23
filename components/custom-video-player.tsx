@@ -263,7 +263,11 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
 
   useEffect(() => {
     endedRef.current = false
-  }, [src])
+    // Cada video nuevo de la playlist debe poder mostrar su propio anuncio.
+    if (isPlaylistTransition && showAds) {
+      adPlayedRef.current = false
+    }
+  }, [src, isPlaylistTransition, showAds])
 
   useEffect(() => {
     const video = videoRef.current
