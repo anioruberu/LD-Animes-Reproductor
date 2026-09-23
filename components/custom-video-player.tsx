@@ -263,7 +263,21 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
 
   useEffect(() => {
     endedRef.current = false
+    // Cada video de la playlist debe mostrar su propio anuncio al iniciar.
+    adPlayedRef.current = false
+    setIsAdPlaying(false)
+    setAdMediaUrl(null)
+    videoRef.current?.pause()
+    setIsPlaying(false)
   }, [src])
+
+  useEffect(() => {
+    // Nunca permitas que el video principal siga reproduciéndose detrás del anuncio.
+    if (isAdPlaying) {
+      videoRef.current?.pause()
+      setIsPlaying(false)
+    }
+  }, [isAdPlaying])
 
   useEffect(() => {
     const video = videoRef.current
