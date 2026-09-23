@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, type TouchEvent, type TouchList } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, ChevronRight, Download, Maximize, BookOpen, Rows3 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Maximize, BookOpen, Rows3, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import * as pdfjs from 'pdfjs-dist'
@@ -21,6 +21,7 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   const [totalPages, setTotalPages] = useState(0)
   const [scale, setScale] = useState(1)
   const [readingMode, setReadingMode] = useState<'manga' | 'normal'>('manga')
+  const [toolbarVisible, setToolbarVisible] = useState(true)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pdf, setPdf] = useState<any>(null)
@@ -209,13 +210,23 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
     pinchStartDistanceRef.current = null
   }
 
-  const handleDownload = () => {
-    const link = document.createElement('a')
-    link.href = pdfUrl
-    link.download = 'manga.pdf'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(getHuggingFaceProxyUrl(pdfUrl), { cache: 'no-store' })
+      if (!response.ok) throw new Error(`Download failed: ${response.status}`)
+      const blob = await response.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = 'manga.pdf'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(blobUrl)
+    } catch (err) {
+      console.error('[v0] Error descargando PDF:', err)
+      setError('Error al descargar el PDF')
+    }
   }
 
   if (isPreview || !pdfUrl) {
@@ -275,6 +286,8 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
     )
   }
 
+  const progress = totalPages > 0 ? Math.min(100, Math.max(0, (currentPage / totalPages) * 100)) : 0
+
   return (
     <div
       ref={viewerRef}
@@ -284,7 +297,12 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
     >
-      <div className="pointer-events-none absolute inset-y-0 left-2 z-10 flex items-center sm:left-4">
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-30 px-3 pt-2 sm:px-5 sm:pt-3">
+        <div className="mx-auto h-1.5 w-full max-w-3xl overflow-hidden rounded-full bg-slate-800/90 shadow-lg ring-1 ring-slate-700/70" role="progressbar" aria-label="Progreso de lectura" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
+          <div className="h-full rounded-full bg-blue-500 transition-[width] duration-200" style={{ width: `${progress}%` }} />
+        </div>
+      </div>
+      {toolbarVisible && <div className="pointer-events-none absolute inset-y-0 left-2 z-10 flex items-center sm:left-4">
         <div className={`pointer-events-auto flex flex-col items-center gap-1 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-1.5 shadow-2xl backdrop-blur-md sm:gap-2 sm:p-2 ${readingMode === 'manga' ? 'origin-left scale-[0.82]' : ''}`}>
           {readingMode === 'manga' && (
             <>
@@ -299,7 +317,17 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
           <Button size="icon" variant="ghost" onClick={handleDownload} title="Descargar PDF" aria-label="Descargar PDF"><Download className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
         </div>
-      </div>
+      </div>}
+      <Button
+        size="icon"
+        variant="ghost"
+        onClick={() => setToolbarVisible((visible) => !visible)}
+        className="fixed left-2 top-1/2 z-20 h-9 w-9 -translate-y-1/2 rounded-full border border-slate-700/80 bg-slate-900/90 text-slate-200 shadow-lg backdrop-blur-md sm:left-4"
+        title={toolbarVisible ? 'Ocultar controles' : 'Mostrar controles'}
+        aria-label={toolbarVisible ? 'Ocultar controles' : 'Mostrar controles'}
+      >
+        {toolbarVisible ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
+      </Button>
       <div className="pointer-events-none fixed right-3 top-3 z-30 rounded-full border border-slate-600/80 bg-slate-900/90 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-md sm:right-5 sm:top-5 sm:px-4 sm:py-2 sm:text-sm">
         {currentPage} / {totalPages}
       </div>
