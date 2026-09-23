@@ -191,16 +191,16 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   return (
     <div ref={viewerRef} className="relative min-h-screen overflow-hidden bg-slate-950">
       <div className="pointer-events-none absolute inset-y-0 left-2 z-10 flex items-center sm:left-4">
-        <div className="pointer-events-auto flex flex-col items-center gap-1 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-1.5 shadow-2xl backdrop-blur-md sm:gap-2 sm:p-2">
-          <Button size="icon" variant="ghost" onClick={handlePrevPage} disabled={currentPage === 1 || !pdf || readingMode === 'normal'} title="Página anterior" aria-label="Página anterior"><ChevronRight className="h-4 w-4" /></Button>
-          <span className="min-w-16 rounded-md bg-slate-800 px-2 py-2 text-center text-[10px] text-white sm:min-w-20 sm:text-xs">{currentPage} / {totalPages}</span>
-          <Button size="icon" variant="ghost" onClick={handleNextPage} disabled={currentPage === totalPages || !pdf || readingMode === 'normal'} title="Página siguiente" aria-label="Página siguiente"><ChevronLeft className="h-4 w-4" /></Button>
-          <div className="my-1 h-px w-6 bg-slate-700" />
-          <Button size="icon" variant={readingMode === 'manga' ? 'default' : 'ghost'} onClick={() => setReadingMode('manga')} title="Lectura manga" aria-label="Lectura manga"><BookOpen className="h-4 w-4" /></Button>
-          <Button size="icon" variant={readingMode === 'normal' ? 'default' : 'ghost'} onClick={() => setReadingMode('normal')} title="Lectura normal de arriba hacia abajo" aria-label="Lectura normal de arriba hacia abajo"><Rows3 className="h-4 w-4" /></Button>
-          <div className="my-1 h-px w-6 bg-slate-700" />
-          <Button size="icon" variant="ghost" onClick={handleDownload} title="Descargar PDF" aria-label="Descargar PDF"><Download className="h-4 w-4" /></Button>
-          <Button size="icon" variant="ghost" onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
+        <div className="pointer-events-auto flex flex-col items-center gap-2 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-2 shadow-2xl backdrop-blur-md">
+          <Button className="h-12 w-12 rounded-full" size="icon" variant="ghost" onClick={handlePrevPage} disabled={currentPage === 1 || !pdf || readingMode === 'normal'} title="Página anterior" aria-label="Página anterior"><ChevronRight className="h-5 w-5" /></Button>
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-800 text-center text-xs text-white">{currentPage} / {totalPages}</span>
+          <Button className="h-12 w-12 rounded-full" size="icon" variant="ghost" onClick={handleNextPage} disabled={currentPage === totalPages || !pdf || readingMode === 'normal'} title="Página siguiente" aria-label="Página siguiente"><ChevronLeft className="h-5 w-5" /></Button>
+          <div className="my-1 h-px w-8 bg-slate-700" />
+          <Button className="h-12 w-12 rounded-full" size="icon" variant={readingMode === 'manga' ? 'default' : 'ghost'} onClick={() => setReadingMode('manga')} title="Lectura manga" aria-label="Lectura manga"><BookOpen className="h-5 w-5" /></Button>
+          <Button className="h-12 w-12 rounded-full" size="icon" variant={readingMode === 'normal' ? 'default' : 'ghost'} onClick={() => setReadingMode('normal')} title="Lectura normal de arriba hacia abajo" aria-label="Lectura normal de arriba hacia abajo"><Rows3 className="h-5 w-5" /></Button>
+          <div className="my-1 h-px w-8 bg-slate-700" />
+          <Button className="h-12 w-12 rounded-full" size="icon" variant="ghost" onClick={handleDownload} title="Descargar PDF" aria-label="Descargar PDF"><Download className="h-5 w-5" /></Button>
+          <Button className="h-12 w-12 rounded-full" size="icon" variant="ghost" onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-5 w-5" /></Button>
         </div>
       </div>
       <div className={`h-screen w-full bg-slate-950 ${readingMode === 'normal' ? 'overflow-y-auto pt-20' : 'flex items-center justify-center overflow-hidden'}`}>
