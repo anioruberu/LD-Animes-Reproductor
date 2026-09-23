@@ -17,8 +17,17 @@ export function isPrivateHuggingFaceUrl(value: string) {
   }
 }
 
+export function isHuggingFaceUrl(value: string) {
+  try {
+    const url = new URL(value)
+    return url.protocol === "https:" && (url.hostname === "huggingface.co" || url.hostname.endsWith(".huggingface.co"))
+  } catch {
+    return false
+  }
+}
+
 export function getHuggingFaceProxyUrl(value: string) {
-  return isPrivateHuggingFaceUrl(value) ? `/api/huggingface?url=${encodeURIComponent(value)}` : value
+  return isHuggingFaceUrl(value) ? `/api/huggingface?url=${encodeURIComponent(value)}` : value
 }
 
 export function isPrivateRepositoryPath(value: string) {

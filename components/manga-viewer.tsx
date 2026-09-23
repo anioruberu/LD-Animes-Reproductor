@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Download, Copy, ZoomIn, ZoomOut, Home, BookO
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import * as pdfjs from 'pdfjs-dist'
+import { getHuggingFaceProxyUrl } from '@/lib/huggingface'
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
 
@@ -32,7 +33,7 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
       try {
         setLoading(true)
         setError(null)
-        const pdf = await pdfjs.getDocument(pdfUrl).promise
+        const pdf = await pdfjs.getDocument({ url: getHuggingFaceProxyUrl(pdfUrl) }).promise
         setPdf(pdf)
         setTotalPages(pdf.numPages)
         setCurrentPage(1)
