@@ -263,8 +263,12 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, 
   }, [volume, isFullscreen])
 
   useEffect(() => {
-    endedRef.current = false
-  }, [src])
+  endedRef.current = false
+  // Cada video nuevo de la playlist debe poder mostrar su propio anuncio.
+  if (isPlaylistTransition && showAds) {
+  adPlayedRef.current = false
+  }
+  }, [src, isPlaylistTransition, showAds])
 
   useEffect(() => {
     const video = videoRef.current
