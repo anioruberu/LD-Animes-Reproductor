@@ -195,7 +195,6 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
           {readingMode === 'manga' && (
             <>
               <Button size="icon" variant="ghost" onClick={handlePrevPage} disabled={currentPage === 1 || !pdf} title="Página anterior" aria-label="Página anterior"><ChevronRight className="h-4 w-4" /></Button>
-              <span className="min-w-16 rounded-md bg-slate-800 px-2 py-2 text-center text-[10px] text-white sm:min-w-20 sm:text-xs">{currentPage} / {totalPages}</span>
               <Button size="icon" variant="ghost" onClick={handleNextPage} disabled={currentPage === totalPages || !pdf} title="Página siguiente" aria-label="Página siguiente"><ChevronLeft className="h-4 w-4" /></Button>
             </>
           )}
@@ -206,6 +205,9 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
           <Button size="icon" variant="ghost" onClick={handleDownload} title="Descargar PDF" aria-label="Descargar PDF"><Download className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
         </div>
+      </div>
+      <div className="pointer-events-none absolute right-3 top-3 z-20 rounded-full border border-slate-600/80 bg-slate-900/90 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-md sm:right-5 sm:top-5 sm:px-4 sm:py-2 sm:text-sm">
+        {currentPage} / {totalPages}
       </div>
       <div className={`h-screen w-full bg-slate-950 ${readingMode === 'normal' ? 'overflow-y-auto pt-20' : 'flex items-center justify-center overflow-hidden'}`}>
         {loading ? <div className="text-gray-400">Cargando...</div> : (
