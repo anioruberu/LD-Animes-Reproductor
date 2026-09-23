@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, type TouchEvent, type TouchList } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight, Download, Maximize, BookOpen, Rows3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -29,6 +29,8 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   const documentScrollRef = useRef<HTMLDivElement>(null)
   const pageCanvasRefs = useRef<Record<number, HTMLCanvasElement | null>>({})
   const currentPageRef = useRef(1)
+  const pinchStartDistanceRef = useRef<number | null>(null)
+  const pinchStartScaleRef = useRef(1)
   const router = useRouter()
 
   // Cargar PDF
@@ -138,16 +140,14 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
     if (!container || readingMode !== 'normal' || loading) return
 
     const observer = new IntersectionObserver((entries) => {
-      const visible = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
-      if (!visible) return
+      const centered = entries.find((entry) => entry.isIntersecting)
+      if (!centered) return
 
-      const pageNumber = Number((visible.target as HTMLElement).dataset.page)
+      const pageNumber = Number((centered.target as HTMLElement).dataset.page)
       if (!pageNumber || pageNumber === currentPageRef.current) return
       currentPageRef.current = pageNumber
       setCurrentPage(pageNumber)
-    }, { root: container, threshold: [0.35, 0.6, 0.85] })
+    }, { root: container, rootMargin: '-45% 0px -45% 0px', threshold: 0.01 })
 
     Object.entries(pageCanvasRefs.current).forEach(([pageNumber, canvas]) => {
       if (canvas) {
@@ -184,6 +184,29 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
     if (!viewerRef.current) return
     if (document.fullscreenElement) await document.exitFullscreen()
     else await viewerRef.current.requestFullscreen()
+  }
+
+  const getTouchDistance = (touches: TouchList) => {
+    const first = touches[0]
+    const second = touches[1]
+    return Math.hypot(second.clientX - first.clientX, second.clientY - first.clientY)
+  }
+
+  const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length !== 2) return
+    pinchStartDistanceRef.current = getTouchDistance(event.touches)
+    pinchStartScaleRef.current = scale
+  }
+
+  const handleTouchMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length !== 2 || pinchStartDistanceRef.current === null) return
+    event.preventDefault()
+    const ratio = getTouchDistance(event.touches) / pinchStartDistanceRef.current
+    setScale(Math.min(3, Math.max(1, pinchStartScaleRef.current * ratio)))
+  }
+
+  const handleTouchEnd = () => {
+    pinchStartDistanceRef.current = null
   }
 
   const handleDownload = () => {
@@ -253,7 +276,14 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   }
 
   return (
-    <div ref={viewerRef} className="relative min-h-screen overflow-hidden bg-slate-950">
+    <div
+      ref={viewerRef}
+      className="relative min-h-screen overflow-hidden bg-slate-950 touch-pan-y"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+    >
       <div className="pointer-events-none absolute inset-y-0 left-2 z-10 flex items-center sm:left-4">
         <div className={`pointer-events-auto flex flex-col items-center gap-1 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-1.5 shadow-2xl backdrop-blur-md sm:gap-2 sm:p-2 ${readingMode === 'manga' ? 'origin-left scale-[0.82]' : ''}`}>
           {readingMode === 'manga' && (
@@ -281,6 +311,7 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
                 key={pageNumber}
                 ref={(element) => { pageCanvasRefs.current[pageNumber] = element }}
                 className={readingMode === 'normal' ? 'block h-auto w-full border-0 shadow-lg' : 'block h-full w-full object-contain border-0'}
+                style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}
               />
             ))}
           </div>
