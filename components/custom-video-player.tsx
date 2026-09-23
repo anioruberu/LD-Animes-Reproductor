@@ -912,20 +912,6 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
           />
           <span className="absolute left-3 top-3 rounded bg-black/70 px-2 py-1 text-xs text-white">Publicidad</span>
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent px-3 pb-3 pt-10">
-            <input
-              type="range"
-              min={0}
-              max={adDuration || 0}
-              step={0.1}
-              value={Math.min(adCurrentTime, adDuration || 0)}
-              onChange={(event) => {
-                const time = Number(event.target.value)
-                if (adVideoRef.current) adVideoRef.current.currentTime = time
-                setAdCurrentTime(time)
-              }}
-              className="h-1 w-full cursor-pointer accent-blue-500"
-              aria-label="Progreso del anuncio"
-            />
             <div className="mt-1 flex items-center justify-between text-xs font-medium text-white">
               <span>{formatTime(adCurrentTime)}</span>
               <span>{formatTime(adDuration)}</span>
