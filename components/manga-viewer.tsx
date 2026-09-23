@@ -189,7 +189,7 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   return (
     <div ref={viewerRef} className="relative min-h-screen overflow-hidden bg-slate-950">
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center p-2 sm:p-3">
-        <div className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-xl border border-slate-700/80 bg-slate-900/90 p-1.5 shadow-lg backdrop-blur-md">
+        <div className="pointer-events-auto flex max-w-[calc(100vw-1rem)] flex-wrap items-center justify-center gap-1.5 rounded-xl border border-slate-700/80 bg-slate-900/90 p-1.5 shadow-lg backdrop-blur-md">
           <Button size="sm" variant="ghost" onClick={handlePrevPage} disabled={currentPage === 1 || !pdf} title="Página anterior"><ChevronRight className="h-4 w-4" /></Button>
           <span className="min-w-20 rounded-md bg-slate-800 px-2 py-2 text-center text-xs text-white">{currentPage} / {totalPages}</span>
           <Button size="sm" variant="ghost" onClick={handleNextPage} disabled={currentPage === totalPages || !pdf} title="Página siguiente"><ChevronLeft className="h-4 w-4" /></Button>
@@ -201,8 +201,8 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
           <Button size="sm" variant="ghost" onClick={handleFullscreen} title="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
         </div>
       </div>
-      <div className="flex h-screen w-full items-start justify-center overflow-auto bg-slate-950 pt-16 sm:pt-20">
-        {loading ? <div className="pt-10 text-gray-400">Cargando...</div> : <canvas ref={setCanvas} className="block h-auto w-auto max-w-full border-0 shadow-2xl" />}
+      <div className="flex h-screen w-full items-center justify-center overflow-hidden bg-slate-950">
+        {loading ? <div className="text-gray-400">Cargando...</div> : <canvas ref={setCanvas} className="block max-h-full max-w-full object-contain border-0 shadow-2xl" />}
       </div>
     </div>
   )
