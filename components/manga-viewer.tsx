@@ -190,9 +190,13 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
     <div ref={viewerRef} className="relative min-h-screen overflow-hidden bg-slate-950">
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center p-2 sm:p-4">
         <div className="pointer-events-auto flex flex-col items-center gap-1 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-1.5 shadow-2xl backdrop-blur-md sm:gap-2 sm:p-2">
-          <Button size="icon" variant="ghost" onClick={handlePrevPage} disabled={currentPage === 1 || !pdf} title="Página anterior" aria-label="Página anterior"><ChevronRight className="h-4 w-4" /></Button>
-          <span className="w-10 rounded-md bg-slate-800 px-1 py-2 text-center text-[10px] text-white sm:w-12 sm:text-xs">{currentPage} / {totalPages}</span>
-          <Button size="icon" variant="ghost" onClick={handleNextPage} disabled={currentPage === totalPages || !pdf} title="Página siguiente" aria-label="Página siguiente"><ChevronLeft className="h-4 w-4" /></Button>
+          {readingMode === 'manga' && (
+            <>
+              <Button size="icon" variant="ghost" onClick={handlePrevPage} disabled={currentPage === 1 || !pdf} title="Página anterior" aria-label="Página anterior"><ChevronRight className="h-4 w-4" /></Button>
+              <span className="w-10 rounded-md bg-slate-800 px-1 py-2 text-center text-[10px] text-white sm:w-12 sm:text-xs">{currentPage} / {totalPages}</span>
+              <Button size="icon" variant="ghost" onClick={handleNextPage} disabled={currentPage === totalPages || !pdf} title="Página siguiente" aria-label="Página siguiente"><ChevronLeft className="h-4 w-4" /></Button>
+            </>
+          )}
           <div className="h-px w-7 bg-slate-700" />
           <Button size="icon" variant={readingMode === 'manga' ? 'default' : 'ghost'} onClick={() => setReadingMode('manga')} title="Lectura de manga" aria-label="Lectura de manga"><BookOpen className="h-4 w-4" /></Button>
           <Button size="icon" variant={readingMode === 'normal' ? 'default' : 'ghost'} onClick={() => setReadingMode('normal')} title="Lectura normal" aria-label="Lectura normal"><Rows3 className="h-4 w-4" /></Button>
@@ -201,7 +205,7 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
           <Button size="icon" variant="ghost" onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
         </div>
       </div>
-      <div className="flex h-screen w-full items-center justify-center overflow-hidden bg-slate-950">
+      <div className="flex h-screen w-full items-start justify-center overflow-hidden bg-slate-950">
         {loading ? <div className="text-gray-400">Cargando...</div> : <canvas ref={setCanvas} className="block h-full w-full object-contain border-0" />}
       </div>
     </div>
