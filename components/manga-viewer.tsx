@@ -24,9 +24,9 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pdf, setPdf] = useState<any>(null)
-  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
   const [inputUrl, setInputUrl] = useState('')
   const viewerRef = useRef<HTMLDivElement>(null)
+  const pageCanvasRefs = useRef<Record<number, HTMLCanvasElement | null>>({})
   const router = useRouter()
 
   // Cargar PDF
@@ -80,31 +80,33 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
     }
   }, [pdfUrl])
 
-  // Renderizar página
+  // En modo manga se muestra una página a la vez; en modo normal se renderiza
+  // todo el documento en una columna, como un lector PDF tradicional.
   useEffect(() => {
-    const renderPage = async () => {
-      if (!pdf || !canvas) return
+    const renderPages = async () => {
+      if (!pdf) return
 
+      const pages = readingMode === 'normal' ? Array.from({ length: pdf.numPages }, (_, index) => index + 1) : [currentPage]
       try {
-        const page = await pdf.getPage(currentPage)
-        const context = canvas.getContext('2d')
-        if (!context) return
+        await Promise.all(pages.map(async (pageNumber) => {
+          const pageCanvas = pageCanvasRefs.current[pageNumber]
+          if (!pageCanvas) return
+          const page = await pdf.getPage(pageNumber)
+          const context = pageCanvas.getContext('2d')
+          if (!context) return
 
-        const viewport = page.getViewport({ scale })
-        canvas.width = viewport.width
-        canvas.height = viewport.height
-
-        await page.render({
-          canvasContext: context,
-          viewport: viewport,
-        }).promise
+          const viewport = page.getViewport({ scale })
+          pageCanvas.width = viewport.width
+          pageCanvas.height = viewport.height
+          await page.render({ canvasContext: context, viewport }).promise
+        }))
       } catch (err) {
-        console.error('[v0] Error renderizando página:', err)
+        console.error('[v0] Error renderizando páginas:', err)
       }
     }
 
-    renderPage()
-  }, [pdf, currentPage, scale, canvas])
+    renderPages()
+  }, [pdf, currentPage, readingMode, scale])
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(1, prev - 1))
@@ -188,25 +190,35 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
 
   return (
     <div ref={viewerRef} className="relative min-h-screen overflow-hidden bg-slate-950">
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center p-2 sm:p-4">
+      <div className="pointer-events-none absolute inset-y-0 left-2 z-10 flex items-center sm:left-4">
         <div className="pointer-events-auto flex flex-col items-center gap-1 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-1.5 shadow-2xl backdrop-blur-md sm:gap-2 sm:p-2">
           {readingMode === 'manga' && (
             <>
               <Button size="icon" variant="ghost" onClick={handlePrevPage} disabled={currentPage === 1 || !pdf} title="Página anterior" aria-label="Página anterior"><ChevronRight className="h-4 w-4" /></Button>
-              <span className="w-10 rounded-md bg-slate-800 px-1 py-2 text-center text-[10px] text-white sm:w-12 sm:text-xs">{currentPage} / {totalPages}</span>
+              <span className="min-w-16 rounded-md bg-slate-800 px-2 py-2 text-center text-[10px] text-white sm:min-w-20 sm:text-xs">{currentPage} / {totalPages}</span>
               <Button size="icon" variant="ghost" onClick={handleNextPage} disabled={currentPage === totalPages || !pdf} title="Página siguiente" aria-label="Página siguiente"><ChevronLeft className="h-4 w-4" /></Button>
             </>
           )}
-          <div className="h-px w-7 bg-slate-700" />
-          <Button size="icon" variant={readingMode === 'manga' ? 'default' : 'ghost'} onClick={() => setReadingMode('manga')} title="Lectura de manga" aria-label="Lectura de manga"><BookOpen className="h-4 w-4" /></Button>
-          <Button size="icon" variant={readingMode === 'normal' ? 'default' : 'ghost'} onClick={() => setReadingMode('normal')} title="Lectura normal" aria-label="Lectura normal"><Rows3 className="h-4 w-4" /></Button>
-          <div className="h-px w-7 bg-slate-700" />
+          <div className="my-1 h-px w-6 bg-slate-700" />
+          <Button size="icon" variant={readingMode === 'manga' ? 'default' : 'ghost'} onClick={() => setReadingMode('manga')} title="Lectura manga" aria-label="Lectura manga"><BookOpen className="h-4 w-4" /></Button>
+          <Button size="icon" variant={readingMode === 'normal' ? 'default' : 'ghost'} onClick={() => setReadingMode('normal')} title="Lectura normal de arriba hacia abajo" aria-label="Lectura normal de arriba hacia abajo"><Rows3 className="h-4 w-4" /></Button>
+          <div className="my-1 h-px w-6 bg-slate-700" />
           <Button size="icon" variant="ghost" onClick={handleDownload} title="Descargar PDF" aria-label="Descargar PDF"><Download className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
         </div>
       </div>
-      <div className="flex h-screen w-full items-start justify-center overflow-hidden bg-slate-950">
-        {loading ? <div className="text-gray-400">Cargando...</div> : <canvas ref={setCanvas} className="block h-full w-full object-contain border-0" />}
+      <div className={`h-screen w-full bg-slate-950 ${readingMode === 'normal' ? 'overflow-y-auto pt-20' : 'flex items-center justify-center overflow-hidden'}`}>
+        {loading ? <div className="text-gray-400">Cargando...</div> : (
+          <div className={readingMode === 'normal' ? 'mx-auto flex w-full max-w-4xl flex-col items-center gap-2 px-2 pb-8' : 'flex h-full w-full items-center justify-center'}>
+            {(readingMode === 'normal' ? Array.from({ length: totalPages }, (_, index) => index + 1) : [currentPage]).map((pageNumber) => (
+              <canvas
+                key={pageNumber}
+                ref={(element) => { pageCanvasRefs.current[pageNumber] = element }}
+                className={readingMode === 'normal' ? 'block h-auto w-full border-0 shadow-lg' : 'block h-full w-full object-contain border-0'}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
