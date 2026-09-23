@@ -30,30 +30,55 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
 
   // Cargar PDF
   useEffect(() => {
+    let cancelled = false
+    let loadingTask: { destroy: () => Promise<void> } | null = null
+
     const loadPdf = async () => {
       try {
         setLoading(true)
         setError(null)
-        const pdf = await pdfjs.getDocument({
-          url: getHuggingFaceProxyUrl(pdfUrl),
-          // Algunos servidores (incluido Hugging Face) no responden correctamente
-          // a las solicitudes Range que PDF.js hace por defecto.
-          disableRange: true,
-          disableStream: true,
-        }).promise
-        setPdf(pdf)
-        setTotalPages(pdf.numPages)
+        setPdf(null)
+        setTotalPages(0)
+
+        // Descargamos el archivo completo antes de entregarlo a PDF.js. Así no
+        // dependemos de Range/redirects de servidores externos como Hugging Face.
+        const response = await fetch(getHuggingFaceProxyUrl(pdfUrl), {
+          cache: 'no-store',
+        })
+        if (!response.ok) {
+          throw new Error(`PDF request failed: ${response.status}`)
+        }
+
+        const data = new Uint8Array(await response.arrayBuffer())
+        if (!data.length) {
+          throw new Error('The PDF response was empty')
+        }
+
+        loadingTask = pdfjs.getDocument({ data })
+        const loadedPdf = await loadingTask.promise
+        if (cancelled) {
+          await loadedPdf.destroy()
+          return
+        }
+
+        setPdf(loadedPdf)
+        setTotalPages(loadedPdf.numPages)
         setCurrentPage(1)
       } catch (err) {
-        setError('Error al cargar el PDF')
-        console.error('[v0] Error cargando PDF:', err)
+        if (!cancelled) {
+          setError('Error al cargar el PDF')
+          console.error('[v0] Error cargando PDF:', err)
+        }
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
-    if (pdfUrl) {
-      loadPdf()
+    if (pdfUrl) loadPdf()
+
+    return () => {
+      cancelled = true
+      if (loadingTask) void loadingTask.destroy()
     }
   }, [pdfUrl])
 
