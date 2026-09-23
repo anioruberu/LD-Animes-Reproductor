@@ -18,9 +18,10 @@ interface CustomVideoPlayerProps {
   onEnded?: () => void
   onPlay?: () => void
   isPlaylistTransition?: boolean
+  enableAds?: boolean
 }
 
-export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay, isPlaylistTransition = false, forceFullSize = false, subtitlesUrl: manualSubtitlesUrl = null }: CustomVideoPlayerProps) {
+export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay, isPlaylistTransition = false, enableAds = true, forceFullSize = false, subtitlesUrl: manualSubtitlesUrl = null }: CustomVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -262,7 +263,21 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
 
   useEffect(() => {
     endedRef.current = false
+    // Cada video de la playlist debe mostrar su propio anuncio al iniciar.
+    adPlayedRef.current = false
+    setIsAdPlaying(false)
+    setAdMediaUrl(null)
+    videoRef.current?.pause()
+    setIsPlaying(false)
   }, [src])
+
+  useEffect(() => {
+    // Nunca permitas que el video principal siga reproduciéndose detrás del anuncio.
+    if (isAdPlaying) {
+      videoRef.current?.pause()
+      setIsPlaying(false)
+    }
+  }, [isAdPlaying])
 
   useEffect(() => {
     const video = videoRef.current
@@ -576,8 +591,10 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
       return
     }
 
-    if (!adPlayedRef.current) {
+    if (enableAds && !adPlayedRef.current) {
       adPlayedRef.current = true
+      video.pause()
+      setIsPlaying(false)
       try {
         const response = await fetch("/api/vast-ad", { cache: "no-store" })
         const data = await response.json()
