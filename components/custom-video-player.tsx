@@ -566,10 +566,11 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
 
     if (isPlaying) {
       video.pause()
-    } else {
-      video.play()
-    }
-    setIsPlaying(!isPlaying)
+  } else {
+    onPlay?.()
+    void video.play()
+  }
+  setIsPlaying(!isPlaying)
   }
 
   const handleSeek = (value: number[]) => {

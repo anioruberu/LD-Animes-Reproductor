@@ -72,7 +72,7 @@ export default function HomePage() {
   const handleDownload = () => {
     if (videoUrl) {
       const encodedUrl = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
-      router.push(`/${selectedPlayer === 'orange' ? 'descargar2' : 'descargar'}?url=${encodedUrl}`)
+      router.push(`/${selectedPlayer === 'orange' ? 'verificar-descargar2' : 'verificar-descargar'}?url=${encodedUrl}`)
     }
   }
 
