@@ -44,6 +44,10 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
   const [subtitlesUrl, setSubtitlesUrl] = useState<string | null>(null)
   const [subtitles, setSubtitles] = useState<Array<{ start: number; end: number; text: string }>>([])
   const [currentSubtitle, setCurrentSubtitle] = useState<string | null>(null)
+  const [isAdPlaying, setIsAdPlaying] = useState(false)
+  const adPlayedRef = useRef(false)
+  const adVideoRef = useRef<HTMLVideoElement | null>(null)
+  const adMediaUrl = "https://www.silent-basis.pro/301305/351385/1161467_0556ey.mp4"
 
   const controlsTimeoutRef = useRef<NodeJS.Timeout>()
   const lastTapRef = useRef<number>(0)
@@ -566,11 +570,15 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
 
     if (isPlaying) {
       video.pause()
-  } else {
-    onPlay?.()
-    void video.play()
-  }
-  setIsPlaying(!isPlaying)
+    } else if (!adPlayedRef.current) {
+      adPlayedRef.current = true
+      setIsAdPlaying(true)
+      void adVideoRef.current?.play()
+    } else {
+      onPlay?.()
+      void video.play()
+    }
+    setIsPlaying(!isPlaying)
   }
 
   const handleSeek = (value: number[]) => {
@@ -861,6 +869,32 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
           : {}
       }
     >
+      {isAdPlaying && (
+        <div className="absolute inset-0 z-20 bg-black" onClick={(event) => event.stopPropagation()}>
+          <video
+            ref={adVideoRef}
+            src={adMediaUrl}
+            className="h-full w-full object-contain"
+            autoPlay
+            playsInline
+            muted={false}
+            controls={false}
+            onEnded={() => {
+              setIsAdPlaying(false)
+              setIsPlaying(false)
+              onPlay?.()
+              void videoRef.current?.play()
+            }}
+            onError={() => {
+              setIsAdPlaying(false)
+              setIsPlaying(false)
+              onPlay?.()
+              void videoRef.current?.play()
+            }}
+          />
+          <span className="absolute left-3 top-3 rounded bg-black/70 px-2 py-1 text-xs text-white">Publicidad</span>
+        </div>
+      )}
       <video
         ref={videoRef}
         src={src}
