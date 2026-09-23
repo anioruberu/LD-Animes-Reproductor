@@ -14,6 +14,17 @@ function DownloadContent() {
   const [filename, setFilename] = useState("video.mp4")
   const [error, setError] = useState<string | null>(null)
   const [downloading, setDownloading] = useState(false)
+  const [secondsLeft, setSecondsLeft] = useState(60)
+
+  useEffect(() => {
+    if (secondsLeft === 0) return
+
+    const timer = window.setInterval(() => {
+      setSecondsLeft((current) => Math.max(0, current - 1))
+    }, 1000)
+
+    return () => window.clearInterval(timer)
+  }, [secondsLeft])
 
   useEffect(() => {
     const curlValue = searchParams.get("curl")
@@ -169,11 +180,11 @@ function DownloadContent() {
         <div className="bg-slate-800/50 rounded-lg border border-slate-700 p-6 space-y-4">
           <Button
             onClick={handleDownload}
-            disabled={downloading}
+            disabled={downloading || secondsLeft > 0}
             className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-orange-800 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             <Download className="h-5 w-5 fill-current" />
-            {downloading ? "Descargando..." : "Descargar Ahora"}
+            {downloading ? "Descargando..." : secondsLeft > 0 ? `Esperar ${secondsLeft}s` : "Descargar Ahora"}
           </Button>
 
           <Button
@@ -182,6 +193,11 @@ function DownloadContent() {
           >
             Volver
           </Button>
+          {secondsLeft > 0 && (
+            <p className="text-center text-sm text-gray-400" aria-live="polite">
+              La descarga estará disponible en {secondsLeft} {secondsLeft === 1 ? "segundo" : "segundos"}.
+            </p>
+          )}
         </div>
 
         <div className="mt-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
