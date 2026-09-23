@@ -921,9 +921,13 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, 
         style={{ objectFit: isFillScreen ? 'fill' : 'contain' }}
         onClick={handleVideoClick}
         onPlay={() => {
-    setIsPlaying(true)
-    onPlay?.()
-  }}
+          if (isAdPlaying) {
+            videoRef.current?.pause()
+            return
+          }
+          setIsPlaying(true)
+          onPlay?.()
+        }}
         onPause={() => setIsPlaying(false)}
         autoPlay={false}
         preload="metadata"

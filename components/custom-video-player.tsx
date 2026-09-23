@@ -932,9 +932,13 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
         style={{ objectFit: isFillScreen ? 'fill' : 'contain' }}
         onClick={handleVideoClick}
         onPlay={() => {
-    setIsPlaying(true)
-    onPlay?.()
-  }}
+          if (isAdPlaying) {
+            videoRef.current?.pause()
+            return
+          }
+          setIsPlaying(true)
+          onPlay?.()
+        }}
         onPause={() => setIsPlaying(false)}
         autoPlay={false}
         preload="metadata"

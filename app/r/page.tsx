@@ -1,7 +1,7 @@
 "use client"
 
 import { Suspense, useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import { CustomVideoPlayer } from "@/components/custom-video-player"
 import { ExternalLink } from "lucide-react"
 import { decodeVideoUrl, encodeVideoUrl } from "@/lib/url-codec"
@@ -9,6 +9,7 @@ import { decodePlaylist, type PlaylistItem } from "@/lib/playlist"
 import { getHuggingFaceProxyUrl } from "@/lib/huggingface"
 
 function VideoPlayerContent() {
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const [subtitlesUrl, setSubtitlesUrl] = useState<string | null>(null)
@@ -164,7 +165,7 @@ onEnded={() => {
   setPlaylistIndex((index) => playlist.length > 0 ? (index + 1) % playlist.length : index)
 }}
   forceFullSize={true}
-          showAds={false}
+          showAds={pathname === "/reproductor"}
         />
       </div>
     </div>
