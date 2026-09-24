@@ -75,7 +75,8 @@ export default function HomePage() {
       return
     }
     saveMangaToLibrary(value)
-    router.push(`/v?url=${encodeURIComponent(value)}`)
+    const mangaUrl = encodeUrl ? encodeVideoUrl(value) : value
+    router.push(`/v?url=${encodeURIComponent(mangaUrl)}`)
   }
 
   const handleGoToPlayer = (playerType: 'blue' | 'orange' = 'blue') => {
@@ -163,11 +164,13 @@ export default function HomePage() {
             <div>
               <label htmlFor="pdf-url" className="mb-2 block text-sm font-medium text-gray-300">URL del archivo PDF</label>
               <Input id="pdf-url" type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://huggingface.co/anioruberu/mp4/resolve/main/01.pdf" className="w-full bg-slate-800 border-slate-700 text-white placeholder-gray-500" />
-              <p className="mt-2 text-xs text-slate-500">Compatible con archivos públicos y privados de Hugging Face usando la configuración segura del servidor.</p>
+              <label htmlFor="encode-pdf-url" className="mt-3 flex items-start gap-3 rounded-lg border border-slate-700 bg-slate-800/60 p-3 text-sm text-gray-300 cursor-pointer">
+                <input id="encode-pdf-url" type="checkbox" checked={encodeUrl} onChange={(e) => setEncodeUrl(e.target.checked)} className="mt-0.5 h-4 w-4 accent-indigo-600" />
+                <span><span className="block font-medium text-white">Codificar URL</span><span className="block text-xs text-gray-500">Aplica la misma codificación segura que la opción de videos.</span></span>
+              </label>
             </div>
             {error && <div className="rounded-lg border border-red-800 bg-red-900/20 p-3 text-sm text-red-300">{error}</div>}
             <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"><FileText className="mr-2 h-4 w-4" />Abrir PDF como manga</Button>
-            <p className="text-center text-xs text-slate-500">También puedes compartirlo como <code>/v?curl=URL</code>. No se genera embed para PDFs.</p>
           </form>
           </>
         ) : null}
