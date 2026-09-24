@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import * as pdfjs from 'pdfjs-dist'
 import { getHuggingFaceProxyUrl } from '@/lib/huggingface'
+import { readMangaProgress, saveMangaProgress } from '@/lib/manga-library'
 
 // pdfjs-dist 6 publica el worker como módulo ES; usar .mjs evita el error de fake worker.
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`
@@ -63,8 +64,9 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
 
         setPdf(loadedPdf)
         setTotalPages(loadedPdf.numPages)
-        currentPageRef.current = 1
-        setCurrentPage(1)
+        const savedPage = Math.min(readMangaProgress(pdfUrl), loadedPdf.numPages)
+        currentPageRef.current = savedPage
+        setCurrentPage(savedPage)
       } catch (err) {
         if (!cancelled) {
           setError('Error al cargar el PDF')
@@ -170,6 +172,10 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
     }
   }
 
+  useEffect(() => {
+    if (pdfUrl && totalPages > 0) saveMangaProgress(pdfUrl, currentPage)
+  }, [pdfUrl, currentPage, totalPages])
+
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(1, prev - 1))
   }
@@ -223,8 +229,9 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
   }
 
   const handleDownload = () => {
-    const downloadUrl = `https://reproductor.ldanimes.xyz/descargar?url=${encodeURIComponent(pdfUrl)}`
-    window.location.assign(downloadUrl)
+    const encodedUrl = encodeURIComponent(pdfUrl)
+    const downloadUrl = `https://reproductor.ldanimes.xyz/descargar?url=${encodedUrl}`
+    window.open(downloadUrl, '_blank', 'noopener,noreferrer')
   }
 
   if (!pdfUrl) return null

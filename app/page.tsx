@@ -138,7 +138,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <VideoLibrary
+        {contentMode === "video" && <VideoLibrary
         onOpen={(items) => {
           if (items.length === 1) {
             setUrl(items[0].url)
@@ -155,7 +155,7 @@ export default function HomePage() {
           setShowEmbedOptions(false)
           setError("")
         }}
-      />
+      />}
   {contentMode === "pdf" ? (
           <>
             <MangaLibrary onOpen={(item) => router.push(`/v?url=${encodeURIComponent(item.url)}`)} />
