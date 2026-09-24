@@ -63,6 +63,14 @@ export default function HomePage() {
   const [playlistItems, setPlaylistItems] = useState<PlaylistItem[]>([])
   const [editingLibraryIndex, setEditingLibraryIndex] = useState<number | null>(null)
 
+  const handleContentModeChange = (mode: "video" | "pdf") => {
+    setContentMode(mode)
+    setError("")
+    setShowEmbedOptions(false)
+    setVideoUrl(null)
+    if (mode === "pdf") setSubtitlesUrl("")
+  }
+
   const handleOpenPdf = (event: React.FormEvent) => {
     event.preventDefault()
     const value = url.trim()
@@ -130,10 +138,10 @@ export default function HomePage() {
           <h1 className="text-3xl font-bold text-white mb-2">LD Animes</h1>
           <p className="text-gray-400">Elige qué quieres abrir</p>
           <div className="mt-5 grid grid-cols-2 gap-2 rounded-lg bg-slate-800 p-1">
-            <button type="button" onClick={() => { setContentMode("video"); setError("") }} className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${contentMode === "video" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"}`}>
+            <button type="button" aria-pressed={contentMode === "video"} onClick={() => handleContentModeChange("video")} className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${contentMode === "video" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"}`}>
               <Play className="mr-2 inline h-4 w-4" />Videos
             </button>
-            <button type="button" onClick={() => { setContentMode("pdf"); setError("") }} className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${contentMode === "pdf" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"}`}>
+            <button type="button" aria-pressed={contentMode === "pdf"} onClick={() => handleContentModeChange("pdf")} className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${contentMode === "pdf" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"}`}>
               <FileText className="mr-2 inline h-4 w-4" />PDF
             </button>
           </div>
