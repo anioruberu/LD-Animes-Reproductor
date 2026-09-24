@@ -84,7 +84,7 @@ export default function HomePage() {
     }
     saveMangaToLibrary(value)
     const mangaUrl = encodeUrl ? encodeVideoUrl(value) : value
-    router.push(`/v?url=${encodeURIComponent(mangaUrl)}`)
+    router.push(`/${selectedPlayer === "orange" ? "v2" : "v"}?url=${encodeURIComponent(mangaUrl)}`)
   }
 
   const handleGoToPlayer = (playerType: 'blue' | 'orange' = 'blue') => {
@@ -170,8 +170,8 @@ export default function HomePage() {
         {contentMode === "pdf" && (
           <>
             <MangaLibrary
-              onOpen={(item, viewer = 'blue') => router.push(`/${viewer === 'orange' ? 'v2' : 'v'}?url=${encodeURIComponent(item.url)}`)}
-              onEdit={(item) => setUrl(item.url)}
+              onOpen={(item) => router.push(`/${selectedPlayer === "orange" ? "v2" : "v"}?url=${encodeURIComponent(item.url)}`)}
+              onEdit={(item) => { setUrl(item.url); setSelectedPlayer("blue") }}
             />
             <form onSubmit={handleOpenPdf} className="mt-6 space-y-4">
               <div>
@@ -181,6 +181,10 @@ export default function HomePage() {
                   <input id="encode-pdf-url" type="checkbox" checked={encodeUrl} onChange={(e) => setEncodeUrl(e.target.checked)} className="mt-0.5 h-4 w-4 accent-indigo-600" />
                   <span><span className="block font-medium text-white">Codificar URL</span><span className="block text-xs text-gray-500">Aplica la misma codificación segura que la opción de videos.</span></span>
                 </label>
+                <div className="mt-3 grid grid-cols-2 gap-2 rounded-lg bg-slate-800 p-1" aria-label="Visor PDF">
+                  <button type="button" aria-pressed={selectedPlayer === "blue"} onClick={() => setSelectedPlayer("blue")} className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${selectedPlayer === "blue" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"}`}>LD Animes visor</button>
+                  <button type="button" aria-pressed={selectedPlayer === "orange"} onClick={() => setSelectedPlayer("orange")} className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${selectedPlayer === "orange" ? "bg-orange-500 text-white" : "text-slate-400 hover:text-white"}`}>GokuPlay visor</button>
+                </div>
               </div>
               {error && <div className="rounded-lg border border-red-800 bg-red-900/20 p-3 text-sm text-red-300">{error}</div>}
               <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"><FileText className="mr-2 h-4 w-4" />Abrir</Button>

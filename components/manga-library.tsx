@@ -4,9 +4,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { getMangaTitle, readMangaLibrary, writeMangaLibrary, type MangaLibraryItem } from "@/lib/manga-library"
 
-type MangaViewerChoice = 'blue' | 'orange'
-
-export function MangaLibrary({ onOpen, onEdit }: { onOpen: (item: MangaLibraryItem, viewer?: MangaViewerChoice) => void; onEdit?: (item: MangaLibraryItem) => void }) {
+export function MangaLibrary({ onOpen, onEdit }: { onOpen: (item: MangaLibraryItem) => void; onEdit?: (item: MangaLibraryItem) => void }) {
   const [items, setItems] = useState<MangaLibraryItem[]>([])
 
   useEffect(() => setItems(readMangaLibrary()), [])
@@ -30,9 +28,8 @@ export function MangaLibrary({ onOpen, onEdit }: { onOpen: (item: MangaLibraryIt
           <div key={`${item.url}-${index}`} className="flex items-center justify-between gap-3 rounded-lg bg-slate-800 p-3">
             <span className="truncate text-sm text-slate-200">{item.title || getMangaTitle(item.url)}</span>
             <div className="flex shrink-0 gap-2">
-<Button size="sm" onClick={() => onOpen(item, 'blue')}>LD Animes</Button>
+<Button size="sm" onClick={() => onOpen(item)}>Abrir</Button>
               {onEdit && <Button size="sm" variant="outline" onClick={() => onEdit(item)}>Editar</Button>}
-              <Button size="sm" className="border-orange-500/50 bg-orange-500/10 text-orange-300 hover:bg-orange-500/20" variant="outline" onClick={() => onOpen(item, 'orange')}>GokuPlay</Button>
               <Button size="sm" variant="destructive" onClick={() => remove(index)}>Borrar</Button>
             </div>
           </div>
