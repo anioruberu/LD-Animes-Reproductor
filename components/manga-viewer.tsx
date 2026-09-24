@@ -57,7 +57,14 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
           throw new Error('The PDF response was empty')
         }
 
-        loadingTask = pdfjs.getDocument({ data })
+        loadingTask = pdfjs.getDocument({
+        data,
+        isOffscreenCanvasSupported: false,
+        useWorkerFetch: false,
+        useWasm: true,
+        isImageDecoderSupported: false,
+        wasmUrl: '/pdfjs/',
+      })
         const loadedPdf = await loadingTask.promise
         if (cancelled) return
 
@@ -96,14 +103,14 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
           const pageCanvas = pageCanvasRefs.current[pageNumber]
           if (!pageCanvas) return
           const page = await pdf.getPage(pageNumber)
-          const context = pageCanvas.getContext('2d', { alpha: false })
+          const context = pageCanvas.getContext('2d', { alpha: true })
           if (!context) return
 
           const viewport = page.getViewport({ scale: 1 })
           pageCanvas.width = viewport.width
           pageCanvas.height = viewport.height
           context.save()
-          context.globalCompositeOperation = 'copy'
+          context.globalCompositeOperation = 'source-over'
           context.fillStyle = '#ffffff'
           context.fillRect(0, 0, viewport.width, viewport.height)
           context.restore()
@@ -113,6 +120,7 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
             intent: 'display',
             background: '#ffffff',
           }).promise
+
         }))
       } catch (err) {
         console.error('[v0] Error renderizando páginas:', err)
