@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { decodeVideoUrl, encodeVideoUrl } from "@/lib/url-codec"
 import { getHuggingFaceProxyUrl } from "@/lib/huggingface"
 import { getDownloadFilename } from "@/lib/download-filename"
+import { MonetagRouteAds } from "@/components/monetag-route-ads"
 
 function DownloadContent() {
   const searchParams = useSearchParams()
@@ -179,8 +180,10 @@ function DownloadContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <>
+      <MonetagRouteAds serviceWorkerPath="/descargar/sw.js" />
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <div className="bg-blue-600 p-3 rounded-lg">
@@ -220,8 +223,9 @@ function DownloadContent() {
             <strong>Nota:</strong> La descarga comenzará automáticamente. Si el archivo es muy grande, puede tardar dependiendo de tu conexión.
           </p>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
