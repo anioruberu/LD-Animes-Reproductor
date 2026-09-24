@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef, type TouchEvent, type TouchList } from 'react'
-import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight, Download, Maximize, BookOpen, Rows3, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -13,10 +12,9 @@ pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pd
 
 interface MangaViewerProps {
   pdfUrl: string
-  isPreview?: boolean
 }
 
-export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
+export function MangaViewer({ pdfUrl }: MangaViewerProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
   const [scale, setScale] = useState(1)
@@ -25,14 +23,12 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pdf, setPdf] = useState<any>(null)
-  const [inputUrl, setInputUrl] = useState('')
   const viewerRef = useRef<HTMLDivElement>(null)
   const documentScrollRef = useRef<HTMLDivElement>(null)
   const pageCanvasRefs = useRef<Record<number, HTMLCanvasElement | null>>({})
   const currentPageRef = useRef(1)
   const pinchStartDistanceRef = useRef<number | null>(null)
   const pinchStartScaleRef = useRef(1)
-  const router = useRouter()
 
   // Cargar PDF
   useEffect(() => {
@@ -210,68 +206,12 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
     pinchStartDistanceRef.current = null
   }
 
-  const handleDownload = async () => {
-    try {
-      const response = await fetch(getHuggingFaceProxyUrl(pdfUrl), { cache: 'no-store' })
-      if (!response.ok) throw new Error(`Download failed: ${response.status}`)
-      const blob = await response.blob()
-      const blobUrl = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = blobUrl
-      link.download = 'manga.pdf'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(blobUrl)
-    } catch (err) {
-      console.error('[v0] Error descargando PDF:', err)
-      setError('Error al descargar el PDF')
-    }
+  const handleDownload = () => {
+    const downloadUrl = `https://reproductor.ldanimes.xyz/descargar?url=${encodeURIComponent(pdfUrl)}`
+    window.location.assign(downloadUrl)
   }
 
-  if (isPreview || !pdfUrl) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-white mb-4">Visor de Manga</h1>
-            <p className="text-gray-400 mb-8">Lee tus PDFs con una experiencia de manga, de derecha a izquierda.</p>
-
-            <form
-              className="space-y-3 mb-6"
-              onSubmit={(event) => {
-                event.preventDefault()
-                const value = inputUrl.trim()
-                if (value) router.push(`/v?url=${encodeURIComponent(value)}`)
-              }}
-            >
-              <label htmlFor="pdf-url" className="sr-only">URL del archivo PDF</label>
-              <input
-                id="pdf-url"
-                type="url"
-                value={inputUrl}
-                onChange={(event) => setInputUrl(event.target.value)}
-                placeholder="https://ejemplo.com/manga.pdf"
-                className="w-full rounded-md border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none ring-blue-500 placeholder:text-slate-500 focus:ring-2"
-                required
-              />
-              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-500">
-                <BookOpen className="w-4 h-4 mr-2" />
-                Abrir PDF como manga
-              </Button>
-            </form>
-
-            <div className="rounded-lg border border-slate-700 bg-slate-800/70 p-4 mb-6 text-left">
-              <p className="text-gray-300 text-sm mb-2">También puedes usar:</p>
-              <code className="text-blue-400 text-xs break-all">/v?curl=TU_URL_PDF</code>
-              <p className="text-slate-500 text-xs mt-2">La pantalla del visor ofrece descargar el PDF y verlo directamente; no crea un embed.</p>
-            </div>
-
-          </div>
-        </div>
-      </div>
-    )
-  }
+  if (!pdfUrl) return null
 
   if (error) {
     return (
@@ -316,18 +256,11 @@ export function MangaViewer({ pdfUrl, isPreview = false }: MangaViewerProps) {
           <div className="my-1 h-px w-6 bg-slate-700" />
           <Button size="icon" variant="ghost" onClick={handleDownload} title="Descargar PDF" aria-label="Descargar PDF"><Download className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" onClick={() => setToolbarVisible((visible) => !visible)} title={toolbarVisible ? 'Ocultar controles' : 'Mostrar controles'} aria-label={toolbarVisible ? 'Ocultar controles' : 'Mostrar controles'}>
+            {toolbarVisible ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
+          </Button>
         </div>
       </div>}
-      <Button
-        size="icon"
-        variant="ghost"
-        onClick={() => setToolbarVisible((visible) => !visible)}
-        className="fixed left-2 top-1/2 z-20 h-9 w-9 -translate-y-1/2 rounded-full border border-slate-700/80 bg-slate-900/90 text-slate-200 shadow-lg backdrop-blur-md sm:left-4"
-        title={toolbarVisible ? 'Ocultar controles' : 'Mostrar controles'}
-        aria-label={toolbarVisible ? 'Ocultar controles' : 'Mostrar controles'}
-      >
-        {toolbarVisible ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
-      </Button>
       <div className="pointer-events-none fixed right-3 top-3 z-30 rounded-full border border-slate-600/80 bg-slate-900/90 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-md sm:right-5 sm:top-5 sm:px-4 sm:py-2 sm:text-sm">
         {currentPage} / {totalPages}
       </div>
