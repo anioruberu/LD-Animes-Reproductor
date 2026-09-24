@@ -20,7 +20,6 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
   const decodedPdfUrl = decodeVideoUrlParam(pdfUrl) || pdfUrl
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
-  const [scale, setScale] = useState(1)
   const [readingMode, setReadingMode] = useState<'manga' | 'normal'>('manga')
   const [toolbarVisible, setToolbarVisible] = useState(true)
   const [isAutoScrolling, setIsAutoScrolling] = useState(false)
@@ -31,8 +30,6 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
   const documentScrollRef = useRef<HTMLDivElement>(null)
   const pageCanvasRefs = useRef<Record<number, HTMLCanvasElement | null>>({})
   const currentPageRef = useRef(1)
-  const pinchStartDistanceRef = useRef<number | null>(null)
-  const pinchStartScaleRef = useRef(1)
 
   // Cargar PDF
   useEffect(() => {
@@ -102,7 +99,7 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
           const context = pageCanvas.getContext('2d')
           if (!context) return
 
-          const viewport = page.getViewport({ scale })
+          const viewport = page.getViewport({ scale: 1 })
           pageCanvas.width = viewport.width
           pageCanvas.height = viewport.height
           await page.render({ canvasContext: context, viewport }).promise
@@ -113,7 +110,7 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
     }
 
     renderPages()
-  }, [pdf, readingMode, scale, readingMode === 'manga' ? currentPage : null])
+  }, [pdf, readingMode, readingMode === 'manga' ? currentPage : null])
 
   const getVisiblePage = () => {
     const container = documentScrollRef.current
@@ -207,29 +204,6 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
     else await viewerRef.current.requestFullscreen()
   }
 
-  const getTouchDistance = (touches: TouchList) => {
-    const first = touches[0]
-    const second = touches[1]
-    return Math.hypot(second.clientX - first.clientX, second.clientY - first.clientY)
-  }
-
-  const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
-    if (event.touches.length !== 2) return
-    pinchStartDistanceRef.current = getTouchDistance(event.touches)
-    pinchStartScaleRef.current = scale
-  }
-
-  const handleTouchMove = (event: TouchEvent<HTMLDivElement>) => {
-    if (event.touches.length !== 2 || pinchStartDistanceRef.current === null) return
-    event.preventDefault()
-    const ratio = getTouchDistance(event.touches) / pinchStartDistanceRef.current
-    setScale(Math.min(3, Math.max(1, pinchStartScaleRef.current * ratio)))
-  }
-
-  const handleTouchEnd = () => {
-    pinchStartDistanceRef.current = null
-  }
-
   const handleDownload = () => {
     const verificationUrl = new URL('/verificar-descargar', window.location.origin)
     verificationUrl.searchParams.set('curl', encodeVideoUrl(decodedPdfUrl))
@@ -256,11 +230,7 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
   return (
     <div
       ref={viewerRef}
-      className="relative min-h-screen overflow-hidden bg-slate-950 touch-pan-y"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchEnd}
+      className="relative min-h-screen overflow-hidden bg-slate-950 touch-auto"
     >
       <div className="pointer-events-none fixed inset-x-0 top-0 z-30 px-3 pt-2 sm:px-5 sm:pt-3">
         <div className="mx-auto h-1.5 w-full max-w-3xl overflow-hidden rounded-full bg-slate-800/90 shadow-lg ring-1 ring-slate-700/70" role="progressbar" aria-label="Progreso de lectura" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
@@ -298,7 +268,6 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
                 key={pageNumber}
                 ref={(element) => { pageCanvasRefs.current[pageNumber] = element }}
                 className={readingMode === 'normal' ? 'block h-auto w-full border-0 shadow-lg' : 'block h-full w-full object-contain border-0'}
-                style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}
               />
             ))}
           </div>
