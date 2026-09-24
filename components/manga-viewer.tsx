@@ -14,9 +14,11 @@ pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pd
 
 interface MangaViewerProps {
   pdfUrl: string
+  theme?: 'blue' | 'orange'
 }
 
-export function MangaViewer({ pdfUrl }: MangaViewerProps) {
+export function MangaViewer({ pdfUrl, theme = 'blue' }: MangaViewerProps) {
+  const isOrange = theme === 'orange'
   const decodedPdfUrl = decodeVideoUrlParam(pdfUrl) || pdfUrl
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
@@ -252,11 +254,11 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
     >
       <div className="pointer-events-none fixed inset-x-0 top-0 z-30 px-3 pt-2 sm:px-5 sm:pt-3">
         <div className="mx-auto h-1.5 w-full max-w-3xl overflow-hidden rounded-full bg-slate-800/90 shadow-lg ring-1 ring-slate-700/70" role="progressbar" aria-label="Progreso de lectura" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
-          <div className="h-full rounded-full bg-blue-500 transition-[width] duration-200" style={{ width: `${progress}%` }} />
+          <div className={`h-full rounded-full ${isOrange ? 'bg-orange-500' : 'bg-blue-500'} transition-[width] duration-200` } style={{ width: `${progress}%` }} />
         </div>
       </div>
       {toolbarVisible && <div className="pointer-events-none absolute inset-y-0 left-2 z-10 flex items-center sm:left-4">
-        <div className={`pointer-events-auto flex origin-left scale-[0.82] flex-col items-center gap-1 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-1.5 shadow-2xl backdrop-blur-md sm:gap-2 sm:p-2`}>
+        <div className={`pointer-events-auto flex origin-left scale-[0.82] flex-col items-center gap-1 rounded-2xl border ${isOrange ? 'border-orange-500/50 bg-orange-950/90' : 'border-slate-700/80 bg-slate-900/90'} p-1.5 shadow-2xl backdrop-blur-md sm:gap-2 sm:p-2`}>
           {readingMode === 'manga' && (
             <>
               <Button size="icon" variant="ghost" onClick={handlePrevPage} disabled={currentPage === 1 || !pdf} title="Página anterior" aria-label="Página anterior"><ChevronRight className="h-4 w-4" /></Button>
@@ -264,8 +266,8 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
             </>
           )}
           <div className="my-1 h-px w-6 bg-slate-700" />
-          <Button size="icon" variant={readingMode === 'manga' ? 'default' : 'ghost'} onClick={() => switchReadingMode('manga')} title="Lectura manga" aria-label="Lectura manga"><BookOpen className="h-4 w-4" /></Button>
-          <Button size="icon" variant={readingMode === 'normal' ? 'default' : 'ghost'} onClick={() => switchReadingMode('normal')} title="Lectura normal de arriba hacia abajo" aria-label="Lectura normal de arriba hacia abajo"><Rows3 className="h-4 w-4" /></Button>
+          <Button size="icon" variant={readingMode === 'manga' ? 'default' : 'ghost'} className={isOrange && readingMode === 'manga' ? 'bg-orange-500 hover:bg-orange-600' : ''} onClick={() => switchReadingMode('manga')} title="Lectura manga" aria-label="Lectura manga"><BookOpen className="h-4 w-4" /></Button>
+          <Button size="icon" variant={readingMode === 'normal' ? 'default' : 'ghost'} className={isOrange && readingMode === 'normal' ? 'bg-orange-500 hover:bg-orange-600' : ''} onClick={() => switchReadingMode('normal')} title="Lectura normal de arriba hacia abajo" aria-label="Lectura normal de arriba hacia abajo"><Rows3 className="h-4 w-4" /></Button>
           {readingMode === 'normal' && <Button size="icon" variant={isAutoScrolling ? 'default' : 'ghost'} onClick={() => setIsAutoScrolling((playing) => !playing)} title={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'} aria-label={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'}>{isAutoScrolling ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}</Button>}
           <div className="my-1 h-px w-6 bg-slate-700" />
           <Button size="icon" variant="ghost" onClick={handleDownload} title="Descargar PDF" aria-label="Descargar PDF"><Download className="h-4 w-4" /></Button>
