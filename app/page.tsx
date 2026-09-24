@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Play, Copy, ExternalLink, Download, FileText } from "lucide-react"
 import { encodeVideoUrl } from "@/lib/url-codec"
+import { MangaLibrary } from "@/components/manga-library"
+import { saveMangaToLibrary } from "@/lib/manga-library"
 import { VideoLibrary } from "@/components/video-library"
 import { encodePlaylist, writeVideoLibrary, readVideoLibrary, type PlaylistItem } from "@/lib/playlist"
 
@@ -72,6 +74,7 @@ export default function HomePage() {
       setError("La URL debe comenzar con https://")
       return
     }
+    saveMangaToLibrary(value)
     router.push(`/v?url=${encodeURIComponent(value)}`)
   }
 
@@ -154,7 +157,9 @@ export default function HomePage() {
         }}
       />
   {contentMode === "pdf" ? (
-          <form onSubmit={handleOpenPdf} className="mt-6 space-y-4">
+          <>
+            <MangaLibrary onOpen={(item) => router.push(`/v?url=${encodeURIComponent(item.url)}`)} />
+            <form onSubmit={handleOpenPdf} className="mt-6 space-y-4">
             <div>
               <label htmlFor="pdf-url" className="mb-2 block text-sm font-medium text-gray-300">URL del archivo PDF</label>
               <Input id="pdf-url" type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://huggingface.co/anioruberu/mp4/resolve/main/01.pdf" className="w-full bg-slate-800 border-slate-700 text-white placeholder-gray-500" />
@@ -164,6 +169,7 @@ export default function HomePage() {
             <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"><FileText className="mr-2 h-4 w-4" />Abrir PDF como manga</Button>
             <p className="text-center text-xs text-slate-500">También puedes compartirlo como <code>/v?curl=URL</code>. No se genera embed para PDFs.</p>
           </form>
+          </>
         ) : null}
 
   <form onSubmit={handleSubmit} className={`space-y-4 ${contentMode === "pdf" ? "hidden" : ""}`}>
