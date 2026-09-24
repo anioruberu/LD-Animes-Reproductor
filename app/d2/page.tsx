@@ -39,13 +39,16 @@ function DownloadContent() {
       return
     }
     const sourceValue = curlValue ?? directUrl
-    const verified = searchParams.get("verified") === "1"
-    if (curlValue && !verified) {
+    const normalizedCurl = curlValue?.startsWith("v1_") ? curlValue : curlValue ? encodeVideoUrl(curlValue) : ""
+    const verificationKey = `download-verified:/descargar2:${normalizedCurl}`
+    const hasOneTimeVerification = curlValue && sessionStorage.getItem(verificationKey) === "1"
+    if (curlValue && !hasOneTimeVerification) {
       const verificationUrl = new URL("/verificar-descargar2", window.location.origin)
-      verificationUrl.searchParams.set("curl", curlValue.startsWith("v1_") ? curlValue : encodeVideoUrl(curlValue))
+      verificationUrl.searchParams.set("curl", normalizedCurl)
       window.location.replace(verificationUrl.toString())
       return
     }
+    if (hasOneTimeVerification) sessionStorage.removeItem(verificationKey)
     if (curlValue && !curlValue.startsWith("v1_")) {
       const normalizedParams = new URLSearchParams(searchParams.toString())
       normalizedParams.set("curl", encodeVideoUrl(curlValue))

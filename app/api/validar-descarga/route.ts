@@ -7,7 +7,7 @@ function getAuthorizedDestination(destination: string) {
   try {
     const url = new URL(destination, "https://reproductor.ldanimes.xyz")
     if (!ALLOWED_DESTINATIONS.has(url.pathname) || url.origin !== "https://reproductor.ldanimes.xyz") return null
-    url.searchParams.set("verified", "1")
+    url.searchParams.delete("verified")
     return `${url.pathname}?${url.searchParams.toString()}`
   } catch {
     return null
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     }
 
     const redirectUrl = new URL(authorizedDestination, request.url)
-    redirectUrl.searchParams.set("verified", "1")
+    redirectUrl.searchParams.delete("verified")
     return NextResponse.json({ authorized: true, redirectUrl: redirectUrl.toString() })
   } catch (error) {
     console.error("[v0] reCAPTCHA request error:", error)

@@ -35,7 +35,9 @@ export function DownloadVerification({ destination, accentClassName }: DownloadV
         throw new Error(result.error ?? "Verificación inválida")
       }
 
-      window.location.assign(result.redirectUrl)
+      const redirectUrl = new URL(result.redirectUrl)
+      sessionStorage.setItem(`download-verified:${redirectUrl.pathname}:${redirectUrl.searchParams.get("curl") ?? ""}`, "1")
+      window.location.assign(redirectUrl.toString())
     } catch (verificationError) {
       console.error("[v0] reCAPTCHA validation error:", verificationError)
       setCaptchaToken(null)
