@@ -7,7 +7,7 @@ import Link from 'next/link'
 import * as pdfjs from 'pdfjs-dist'
 import { getHuggingFaceProxyUrl } from '@/lib/huggingface'
 import { readMangaProgress, saveMangaProgress } from '@/lib/manga-library'
-import { decodeVideoUrlParam } from '@/lib/url-codec'
+import { decodeVideoUrlParam, encodeVideoUrl } from '@/lib/url-codec'
 
 // pdfjs-dist 6 publica el worker como módulo ES; usar .mjs evita el error de fake worker.
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`
@@ -231,9 +231,9 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
   }
 
   const handleDownload = () => {
-    const downloadUrl = new URL('https://reproductor.ldanimes.xyz/descargar')
-    downloadUrl.searchParams.set('url', decodedPdfUrl)
-    window.location.href = downloadUrl.toString()
+    const verificationUrl = new URL('/verificar-descargar', window.location.origin)
+    verificationUrl.searchParams.set('curl', encodeVideoUrl(decodedPdfUrl))
+    window.location.href = verificationUrl.toString()
   }
 
   if (!decodedPdfUrl) return null

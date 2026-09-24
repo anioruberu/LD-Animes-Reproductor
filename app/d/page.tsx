@@ -37,7 +37,7 @@ function DownloadContent() {
     }
     const url = decodeVideoUrl(sourceValue)
     if (!url) {
-      setError("No se proporcionó una URL de video")
+      setError("No se proporcionó una URL de descarga")
       return
     }
 
@@ -188,7 +188,7 @@ function DownloadContent() {
             </div>
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Descargar {fileType === "pdf" ? "PDF" : "Video"}</h1>
-          <p className="text-gray-400">Haz clic para descargar tu video</p>
+          <p className="text-gray-400">Haz clic para descargar tu archivo</p>
           <p className="mt-2 text-sm text-gray-300">Archivo: <span className="font-medium text-white">{filename}</span></p>
         </div>
 
