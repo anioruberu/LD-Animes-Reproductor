@@ -105,7 +105,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
       const pages = readingMode === 'normal' ? Array.from({ length: pdf.numPages }, (_, index) => index + 1) : [currentPage]
       try {
         for (const [index, pageNumber] of pages.entries()) {
-          if (index > 0) await new Promise<void>((resolve) => window.setTimeout(resolve, 0))
+          if (index > 0) await new Promise<void>((resolve) => window.setTimeout(resolve, 40))
           const pageCanvas = pageCanvasRefs.current[pageNumber]
           if (!pageCanvas) continue
           const page = await pdf.getPage(pageNumber)
@@ -126,6 +126,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
             intent: 'display',
             background: '#ffffff',
           }).promise
+          page.cleanup()
         }
       } catch (err) {
         console.error('[v0] Error renderizando páginas:', err)
