@@ -202,7 +202,6 @@ export default function HomePage() {
               onChange={(e) => setSubtitlesUrl(e.target.value)}
               className="w-full bg-slate-800 border-slate-700 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
             />
-            <p className="mt-1 text-xs text-gray-500">Hugging Face seguirá buscando automáticamente su archivo .srt si lo dejas vacío.</p>
           </div>
 
           <label htmlFor="encode-url" className="flex items-start gap-3 rounded-lg border border-slate-700 bg-slate-800/60 p-3 text-sm text-gray-300 cursor-pointer">
@@ -378,34 +377,21 @@ export default function HomePage() {
           </div>
         )}
 
-        {!videoUrl && (
+        {!videoUrl && contentMode === "video" && (
           <div className="mt-8 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-            <h2 className="text-sm font-semibold text-white mb-3">Formatos Compatibles:</h2>
+            <h2 className="text-sm font-semibold text-white mb-3">Formatos de video compatibles:</h2>
             <ul className="text-xs text-gray-400 space-y-2">
-              <li className="flex items-start gap-2">
-                <span className="text-blue-400 mt-0.5">•</span>
-                <span>.mp4</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-400 mt-0.5">•</span>
-                <span>.mkv</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-400 mt-0.5">•</span>
-                <span>.m3u8</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-400 mt-0.5">•</span>
-                <span>.webm</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-400 mt-0.5">•</span>
-                <span>.avi</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-400 mt-0.5">•</span>
-                <span>.mov</span>
-              </li>
+              {['.mp4', '.mkv', '.m3u8', '.webm', '.avi', '.mov'].map((format) => <li key={format} className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">•</span><span>{format}</span></li>)}
+            </ul>
+          </div>
+        )}
+        {contentMode === "pdf" && (
+          <div className="mt-8 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+            <h2 className="text-sm font-semibold text-white mb-3">URLs de manga compatibles:</h2>
+            <ul className="text-xs text-gray-400 space-y-2">
+              <li>• Archivos PDF directos desde Hugging Face</li>
+              <li>• Enlaces directos que terminan en .pdf</li>
+              <li>• URLs públicas HTTPS con acceso al archivo PDF</li>
             </ul>
           </div>
         )}
