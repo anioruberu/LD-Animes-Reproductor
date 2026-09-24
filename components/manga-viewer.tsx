@@ -102,7 +102,11 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
           const viewport = page.getViewport({ scale: 1 })
           pageCanvas.width = viewport.width
           pageCanvas.height = viewport.height
-          await page.render({ canvasContext: context, viewport }).promise
+          context.save()
+          context.fillStyle = '#ffffff'
+          context.fillRect(0, 0, viewport.width, viewport.height)
+          context.restore()
+          await page.render({ canvasContext: context, viewport, background: '#ffffff' }).promise
         }))
       } catch (err) {
         console.error('[v0] Error renderizando páginas:', err)
