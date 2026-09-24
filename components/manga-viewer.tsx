@@ -7,6 +7,7 @@ import Link from 'next/link'
 import * as pdfjs from 'pdfjs-dist'
 import { getHuggingFaceProxyUrl } from '@/lib/huggingface'
 import { readMangaProgress, saveMangaProgress } from '@/lib/manga-library'
+import { decodeVideoUrlParam } from '@/lib/url-codec'
 
 // pdfjs-dist 6 publica el worker como módulo ES; usar .mjs evita el error de fake worker.
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`
@@ -16,6 +17,7 @@ interface MangaViewerProps {
 }
 
 export function MangaViewer({ pdfUrl }: MangaViewerProps) {
+  const decodedPdfUrl = decodeVideoUrlParam(pdfUrl) || pdfUrl
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
   const [scale, setScale] = useState(1)
@@ -46,7 +48,7 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
 
         // Descargamos el archivo completo antes de entregarlo a PDF.js. Así no
         // dependemos de Range/redirects de servidores externos como Hugging Face.
-        const response = await fetch(getHuggingFaceProxyUrl(pdfUrl), {
+        const response = await fetch(getHuggingFaceProxyUrl(decodedPdfUrl), {
           cache: 'no-store',
         })
         if (!response.ok) {
@@ -64,7 +66,7 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
 
         setPdf(loadedPdf)
         setTotalPages(loadedPdf.numPages)
-        const savedPage = Math.min(readMangaProgress(pdfUrl), loadedPdf.numPages)
+        const savedPage = Math.min(readMangaProgress(decodedPdfUrl), loadedPdf.numPages)
         currentPageRef.current = savedPage
         setCurrentPage(savedPage)
       } catch (err) {
@@ -77,13 +79,13 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
       }
     }
 
-    if (pdfUrl) loadPdf()
+    if (decodedPdfUrl) loadPdf()
 
     return () => {
       cancelled = true
       if (loadingTask) void loadingTask.destroy()
     }
-  }, [pdfUrl])
+  }, [decodedPdfUrl])
 
   // En modo manga se muestra una página a la vez; en modo normal se renderiza
   // todo el documento en una columna, como un lector PDF tradicional.
@@ -173,8 +175,8 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
   }
 
   useEffect(() => {
-    if (pdfUrl && totalPages > 0) saveMangaProgress(pdfUrl, currentPage)
-  }, [pdfUrl, currentPage, totalPages])
+    if (decodedPdfUrl && totalPages > 0) saveMangaProgress(decodedPdfUrl, currentPage)
+  }, [decodedPdfUrl, currentPage, totalPages])
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(1, prev - 1))
@@ -229,12 +231,12 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
   }
 
   const handleDownload = () => {
-    const encodedUrl = encodeURIComponent(pdfUrl)
-    const downloadUrl = `https://reproductor.ldanimes.xyz/descargar?url=${encodedUrl}`
-    window.open(downloadUrl, '_blank', 'noopener,noreferrer')
+    const downloadUrl = new URL('https://reproductor.ldanimes.xyz/descargar')
+    downloadUrl.searchParams.set('url', decodedPdfUrl)
+    window.location.href = downloadUrl.toString()
   }
 
-  if (!pdfUrl) return null
+  if (!decodedPdfUrl) return null
 
   if (error) {
     return (
