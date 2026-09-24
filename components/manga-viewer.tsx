@@ -103,12 +103,11 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
       if (!pdf) return
 
       const pages = readingMode === 'normal'
-        ? Array.from({ length: Math.min(pdf.numPages, 8), }, (_, index) => Math.max(1, Math.min(pdf.numPages, currentPage + index - 3)))
-            .filter((pageNumber, index, visiblePages) => visiblePages.indexOf(pageNumber) === index)
+        ? Array.from({ length: pdf.numPages }, (_, index) => index + 1)
         : [currentPage]
       try {
         for (const [index, pageNumber] of pages.entries()) {
-          if (index > 0) await new Promise<void>((resolve) => window.setTimeout(resolve, 40))
+          if (index > 0) await new Promise<void>((resolve) => window.setTimeout(resolve, 0))
           const pageCanvas = pageCanvasRefs.current[pageNumber]
           if (!pageCanvas) continue
           const page = await pdf.getPage(pageNumber)
@@ -137,7 +136,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
     }
 
     renderPages()
-  }, [pdf, readingMode, currentPage])
+  }, [pdf, readingMode])
 
   const getVisiblePage = () => {
     const container = documentScrollRef.current
@@ -213,17 +212,18 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   useEffect(() => {
     if (!isAutoScrolling || readingMode !== 'normal') return
 
-    let timer: number | undefined
-    const tick = () => {
+    let frameId = 0
+    let lastTime = 0
+    const tick = (time: number) => {
       const container = documentScrollRef.current
       if (!container) {
-        timer = window.setTimeout(tick, 100)
+        frameId = window.requestAnimationFrame(tick)
         return
       }
 
       const maxScrollTop = container.scrollHeight - container.clientHeight
       if (maxScrollTop <= 0) {
-        timer = window.setTimeout(tick, 100)
+        frameId = window.requestAnimationFrame(tick)
         return
       }
       if (container.scrollTop >= maxScrollTop - 2) {
@@ -231,14 +231,14 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
         return
       }
 
-      container.scrollTop = Math.min(container.scrollTop + 1, maxScrollTop)
-      timer = window.setTimeout(tick, 50)
+      const elapsed = lastTime ? Math.min(time - lastTime, 50) : 16
+      container.scrollTop = Math.min(container.scrollTop + elapsed * 0.06, maxScrollTop)
+      lastTime = time
+      frameId = window.requestAnimationFrame(tick)
     }
 
-    timer = window.setTimeout(tick, 50)
-    return () => {
-      if (timer !== undefined) window.clearTimeout(timer)
-    }
+    frameId = window.requestAnimationFrame(tick)
+    return () => window.cancelAnimationFrame(frameId)
   }, [isAutoScrolling, readingMode])
 
   const toggleAutoScroll = () => {
