@@ -150,7 +150,9 @@ function DownloadContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center p-4">
+      <>
+        <MonetagRouteAds serviceWorkerPath="/descargar/sw.js" />
+        <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center p-4">
         <div className="text-center text-white max-w-md">
           <div className="mb-6">
             <AlertCircle className="h-16 w-16 mx-auto mb-4 text-red-400" />
@@ -164,18 +166,22 @@ function DownloadContent() {
             Volver atrás
           </Button>
         </div>
-      </div>
+        </div>
+      </>
     )
   }
 
   if (!videoUrl) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center">
+      <>
+        <MonetagRouteAds serviceWorkerPath="/descargar/sw.js" />
+        <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center">
         <div className="text-center text-white">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
           <p>Preparando descarga...</p>
         </div>
-      </div>
+        </div>
+      </>
     )
   }
 
