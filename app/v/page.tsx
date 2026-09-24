@@ -18,11 +18,11 @@ export async function generateMetadata() {
 export default async function MangaViewerPage({ searchParams }: PageProps) {
   const params = await searchParams
   const pdfUrl = params.url || params.curl
-  const isPreview = !pdfUrl
+  if (!pdfUrl) return null
 
   return (
     <Suspense fallback={<div className="min-h-screen bg-slate-900 flex items-center justify-center">Cargando...</div>}>
-      <MangaViewer pdfUrl={pdfUrl || ''} isPreview={isPreview} />
+      <MangaViewer pdfUrl={pdfUrl} />
     </Suspense>
   )
 }
