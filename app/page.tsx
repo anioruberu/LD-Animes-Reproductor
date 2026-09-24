@@ -139,41 +139,43 @@ export default function HomePage() {
           </div>
         </div>
 
-        {contentMode === "video" && <VideoLibrary
-        onOpen={(items) => {
-          if (items.length === 1) {
-            setUrl(items[0].url)
-            setSubtitlesUrl(items[0].subtitlesUrl || "")
-            setVideoUrl(items[0].url)
-            setShowEmbedOptions(true)
-          }
-        }}
-        onEdit={(item, index) => {
-          setEditingLibraryIndex(index)
-          setUrl(item.url)
-          setSubtitlesUrl(item.subtitlesUrl || "")
-          setVideoUrl(null)
-          setShowEmbedOptions(false)
-          setError("")
-        }}
-      />}
-  {contentMode === "pdf" ? (
+        {contentMode === "video" && (
+          <VideoLibrary
+            onOpen={(items) => {
+              if (items.length === 1) {
+                setUrl(items[0].url)
+                setSubtitlesUrl(items[0].subtitlesUrl || "")
+                setVideoUrl(items[0].url)
+                setShowEmbedOptions(true)
+              }
+            }}
+            onEdit={(item, index) => {
+              setEditingLibraryIndex(index)
+              setUrl(item.url)
+              setSubtitlesUrl(item.subtitlesUrl || "")
+              setVideoUrl(null)
+              setShowEmbedOptions(false)
+              setError("")
+            }}
+          />
+        )}
+        {contentMode === "pdf" && (
           <>
             <MangaLibrary onOpen={(item) => router.push(`/v?url=${encodeURIComponent(item.url)}`)} />
             <form onSubmit={handleOpenPdf} className="mt-6 space-y-4">
-            <div>
-              <label htmlFor="pdf-url" className="mb-2 block text-sm font-medium text-gray-300">URL del archivo PDF</label>
-              <Input id="pdf-url" type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://huggingface.co/anioruberu/mp4/resolve/main/01.pdf" className="w-full bg-slate-800 border-slate-700 text-white placeholder-gray-500" />
-              <label htmlFor="encode-pdf-url" className="mt-3 flex items-start gap-3 rounded-lg border border-slate-700 bg-slate-800/60 p-3 text-sm text-gray-300 cursor-pointer">
-                <input id="encode-pdf-url" type="checkbox" checked={encodeUrl} onChange={(e) => setEncodeUrl(e.target.checked)} className="mt-0.5 h-4 w-4 accent-indigo-600" />
-                <span><span className="block font-medium text-white">Codificar URL</span><span className="block text-xs text-gray-500">Aplica la misma codificación segura que la opción de videos.</span></span>
-              </label>
-            </div>
-            {error && <div className="rounded-lg border border-red-800 bg-red-900/20 p-3 text-sm text-red-300">{error}</div>}
-            <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"><FileText className="mr-2 h-4 w-4" />Abrir PDF como manga</Button>
-          </form>
+              <div>
+                <label htmlFor="pdf-url" className="mb-2 block text-sm font-medium text-gray-300">URL del archivo PDF</label>
+                <Input id="pdf-url" type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://huggingface.co/anioruberu/mp4/resolve/main/01.pdf" className="w-full bg-slate-800 border-slate-700 text-white placeholder-gray-500" />
+                <label htmlFor="encode-pdf-url" className="mt-3 flex items-start gap-3 rounded-lg border border-slate-700 bg-slate-800/60 p-3 text-sm text-gray-300 cursor-pointer">
+                  <input id="encode-pdf-url" type="checkbox" checked={encodeUrl} onChange={(e) => setEncodeUrl(e.target.checked)} className="mt-0.5 h-4 w-4 accent-indigo-600" />
+                  <span><span className="block font-medium text-white">Codificar URL</span><span className="block text-xs text-gray-500">Aplica la misma codificación segura que la opción de videos.</span></span>
+                </label>
+              </div>
+              {error && <div className="rounded-lg border border-red-800 bg-red-900/20 p-3 text-sm text-red-300">{error}</div>}
+              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"><FileText className="mr-2 h-4 w-4" />Abrir PDF como manga</Button>
+            </form>
           </>
-        ) : null}
+        )}
 
   <form onSubmit={handleSubmit} className={`space-y-4 ${contentMode === "pdf" ? "hidden" : ""}`}>
           <div>

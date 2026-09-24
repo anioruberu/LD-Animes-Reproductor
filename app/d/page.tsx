@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { decodeVideoUrl, encodeVideoUrl } from "@/lib/url-codec"
 import { getHuggingFaceProxyUrl } from "@/lib/huggingface"
 import { getDownloadFilename } from "@/lib/download-filename"
+import { MonetagRouteAds } from "@/components/monetag-route-ads"
 
 function DownloadContent() {
   const searchParams = useSearchParams()
@@ -149,7 +150,9 @@ function DownloadContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center p-4">
+      <>
+        <MonetagRouteAds serviceWorkerPath="/descargar/sw.js" />
+        <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center p-4">
         <div className="text-center text-white max-w-md">
           <div className="mb-6">
             <AlertCircle className="h-16 w-16 mx-auto mb-4 text-red-400" />
@@ -163,24 +166,30 @@ function DownloadContent() {
             Volver atrás
           </Button>
         </div>
-      </div>
+        </div>
+      </>
     )
   }
 
   if (!videoUrl) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center">
+      <>
+        <MonetagRouteAds serviceWorkerPath="/descargar/sw.js" />
+        <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center">
         <div className="text-center text-white">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
           <p>Preparando descarga...</p>
         </div>
-      </div>
+        </div>
+      </>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <>
+      <MonetagRouteAds serviceWorkerPath="/descargar/sw.js" />
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <div className="bg-blue-600 p-3 rounded-lg">
@@ -220,8 +229,9 @@ function DownloadContent() {
             <strong>Nota:</strong> La descarga comenzará automáticamente. Si el archivo es muy grande, puede tardar dependiendo de tu conexión.
           </p>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
