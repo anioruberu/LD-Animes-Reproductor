@@ -1,15 +1,18 @@
 "use client"
 
 import { Suspense, useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import { Download, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { decodeVideoUrl, encodeVideoUrl } from "@/lib/url-codec"
 import { getHuggingFaceProxyUrl } from "@/lib/huggingface"
 import { getDownloadFilename } from "@/lib/download-filename"
+import { MonetagRouteAds } from "@/components/monetag-route-ads"
 
 function DownloadContent() {
   const searchParams = useSearchParams()
+  const pathname = usePathname()
+  const showAds = pathname === "/descargar2"
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const [filename, setFilename] = useState("video.mp4")
   const [error, setError] = useState<string | null>(null)
@@ -183,6 +186,7 @@ function DownloadContent() {
 
   return (
     <>
+      {showAds && <MonetagRouteAds serviceWorkerPath="/descargar2/sw.js" />}
       <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
