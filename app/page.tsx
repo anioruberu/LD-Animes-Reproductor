@@ -161,7 +161,10 @@ export default function HomePage() {
         )}
         {contentMode === "pdf" && (
           <>
-            <MangaLibrary onOpen={(item) => router.push(`/v?url=${encodeURIComponent(item.url)}`)} />
+            <MangaLibrary
+              onOpen={(item, viewer = 'blue') => router.push(`/${viewer === 'orange' ? 'v2' : 'v'}?url=${encodeURIComponent(item.url)}`)}
+              onEdit={(item) => setUrl(item.url)}
+            />
             <form onSubmit={handleOpenPdf} className="mt-6 space-y-4">
               <div>
                 <label htmlFor="pdf-url" className="mb-2 block text-sm font-medium text-gray-300">URL del archivo PDF</label>
