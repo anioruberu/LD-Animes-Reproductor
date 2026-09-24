@@ -64,7 +64,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ authorized: false, error: "Verificación inválida" }, { status: 400 })
     }
 
-    return NextResponse.json({ authorized: true, redirectUrl: authorizedDestination })
+    const redirectUrl = new URL(authorizedDestination, request.url)
+    redirectUrl.searchParams.set("verified", "1")
+    return NextResponse.json({ authorized: true, redirectUrl: redirectUrl.toString() })
   } catch (error) {
     console.error("[v0] reCAPTCHA request error:", error)
     return NextResponse.json({ authorized: false, error: "Error de verificación" }, { status: 502 })
