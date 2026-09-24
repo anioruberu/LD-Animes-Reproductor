@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, type TouchEvent, type TouchList } from 'react'
-import { ChevronLeft, ChevronRight, Download, Maximize, BookOpen, Rows3, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Maximize, BookOpen, Rows3, PanelLeftClose, PanelLeftOpen, Play, Pause } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import * as pdfjs from 'pdfjs-dist'
@@ -20,6 +20,7 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
   const [scale, setScale] = useState(1)
   const [readingMode, setReadingMode] = useState<'manga' | 'normal'>('manga')
   const [toolbarVisible, setToolbarVisible] = useState(true)
+  const [isAutoScrolling, setIsAutoScrolling] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pdf, setPdf] = useState<any>(null)
@@ -177,6 +178,21 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
     setCurrentPage((prev) => Math.min(totalPages, prev + 1))
   }
 
+  useEffect(() => {
+    if (!isAutoScrolling || readingMode !== 'normal' || !documentScrollRef.current) return
+    const timer = window.setInterval(() => {
+      const container = documentScrollRef.current
+      if (!container) return
+      const atEnd = container.scrollTop + container.clientHeight >= container.scrollHeight - 2
+      if (atEnd) {
+        setIsAutoScrolling(false)
+        return
+      }
+      container.scrollBy({ top: 1, behavior: 'auto' })
+    }, 45)
+    return () => window.clearInterval(timer)
+  }, [isAutoScrolling, readingMode])
+
   const handleFullscreen = async () => {
     if (!viewerRef.current) return
     if (document.fullscreenElement) await document.exitFullscreen()
@@ -253,6 +269,7 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
           <div className="my-1 h-px w-6 bg-slate-700" />
           <Button size="icon" variant={readingMode === 'manga' ? 'default' : 'ghost'} onClick={() => switchReadingMode('manga')} title="Lectura manga" aria-label="Lectura manga"><BookOpen className="h-4 w-4" /></Button>
           <Button size="icon" variant={readingMode === 'normal' ? 'default' : 'ghost'} onClick={() => switchReadingMode('normal')} title="Lectura normal de arriba hacia abajo" aria-label="Lectura normal de arriba hacia abajo"><Rows3 className="h-4 w-4" /></Button>
+          {readingMode === 'normal' && <Button size="icon" variant={isAutoScrolling ? 'default' : 'ghost'} onClick={() => setIsAutoScrolling((playing) => !playing)} title={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'} aria-label={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'}>{isAutoScrolling ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}</Button>}
           <div className="my-1 h-px w-6 bg-slate-700" />
           <Button size="icon" variant="ghost" onClick={handleDownload} title="Descargar PDF" aria-label="Descargar PDF"><Download className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
