@@ -102,7 +102,10 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
     const renderPages = async () => {
       if (!pdf) return
 
-      const pages = readingMode === 'normal' ? Array.from({ length: pdf.numPages }, (_, index) => index + 1) : [currentPage]
+      const pages = readingMode === 'normal'
+        ? Array.from({ length: Math.min(pdf.numPages, 8), }, (_, index) => Math.max(1, Math.min(pdf.numPages, currentPage + index - 3)))
+            .filter((pageNumber, index, visiblePages) => visiblePages.indexOf(pageNumber) === index)
+        : [currentPage]
       try {
         for (const [index, pageNumber] of pages.entries()) {
           if (index > 0) await new Promise<void>((resolve) => window.setTimeout(resolve, 40))
@@ -134,7 +137,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
     }
 
     renderPages()
-  }, [pdf, readingMode, readingMode === 'manga' ? currentPage : null])
+  }, [pdf, readingMode, currentPage])
 
   const getVisiblePage = () => {
     const container = documentScrollRef.current
@@ -319,6 +322,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
                 key={pageNumber}
                 ref={(element) => { pageCanvasRefs.current[pageNumber] = element }}
                 className={readingMode === 'normal' ? 'block h-auto w-full border-0 shadow-lg' : 'block h-full w-full object-contain border-0'}
+                style={readingMode === 'normal' ? { aspectRatio: '0.707 / 1' } : undefined}
               />
             ))}
           </div>
