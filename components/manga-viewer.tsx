@@ -209,28 +209,24 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   useEffect(() => {
     if (!isAutoScrolling || readingMode !== 'normal') return
 
-    let frameId = 0
-    let lastTimestamp = 0
-    const scroll = (timestamp: number) => {
+    const timer = window.setInterval(() => {
       const container = documentScrollRef.current
       if (!container) return
-      if (!lastTimestamp) lastTimestamp = timestamp
-      const elapsed = timestamp - lastTimestamp
-      if (elapsed >= 16) {
-        const atEnd = container.scrollTop + container.clientHeight >= container.scrollHeight - 2
-        if (atEnd) {
-          setIsAutoScrolling(false)
-          return
-        }
-        container.scrollTop += Math.max(1, Math.round(elapsed / 45))
-        lastTimestamp = timestamp
+      const atEnd = container.scrollTop + container.clientHeight >= container.scrollHeight - 2
+      if (atEnd) {
+        setIsAutoScrolling(false)
+        return
       }
-      frameId = window.requestAnimationFrame(scroll)
-    }
+      container.scrollTop = Math.min(container.scrollTop + 2, container.scrollHeight - container.clientHeight)
+    }, 45)
 
-    frameId = window.requestAnimationFrame(scroll)
-    return () => window.cancelAnimationFrame(frameId)
+    return () => window.clearInterval(timer)
   }, [isAutoScrolling, readingMode])
+
+  const toggleAutoScroll = () => {
+    if (readingMode !== 'normal' || !documentScrollRef.current) return
+    setIsAutoScrolling((playing) => !playing)
+  }
 
   const handleFullscreen = async () => {
     if (!viewerRef.current) return
@@ -288,7 +284,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           <div className="my-1 h-px w-6 bg-slate-700" />
           <Button size="icon" variant="ghost" className={readingMode === 'manga' ? activeColor : ''} onClick={() => switchReadingMode('manga')} title="Lectura manga" aria-label="Lectura manga"><BookOpen className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" className={readingMode === 'normal' ? activeColor : ''} onClick={() => switchReadingMode('normal')} title="Lectura normal de arriba hacia abajo" aria-label="Lectura normal de arriba hacia abajo"><Rows3 className="h-4 w-4" /></Button>
-          {readingMode === 'normal' && <Button size="icon" variant="ghost" className={isAutoScrolling ? activeColor : ''} onClick={() => setIsAutoScrolling((playing) => !playing)} title={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'} aria-label={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'}>{isAutoScrolling ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}</Button>}
+          {readingMode === 'normal' && <Button size="icon" variant="ghost" className={isAutoScrolling ? activeColor : ''} onClick={toggleAutoScroll} title={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'} aria-label={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'}>{isAutoScrolling ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}</Button>}
           <div className="my-1 h-px w-6 bg-slate-700" />
           <Button size="icon" variant="ghost" className={activeColor} onClick={handleDownload} title="Descargar PDF" aria-label="Descargar PDF"><Download className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" className={isFullscreen ? activeColor : ''} onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
