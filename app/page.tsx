@@ -134,7 +134,7 @@ export default function HomePage() {
               <Play className="mr-2 inline h-4 w-4" />Videos
             </button>
             <button type="button" onClick={() => { setContentMode("pdf"); setError("") }} className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${contentMode === "pdf" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"}`}>
-              <FileText className="mr-2 inline h-4 w-4" />PDF / Manga
+              <FileText className="mr-2 inline h-4 w-4" />PDF
             </button>
           </div>
         </div>
@@ -165,14 +165,14 @@ export default function HomePage() {
             <form onSubmit={handleOpenPdf} className="mt-6 space-y-4">
               <div>
                 <label htmlFor="pdf-url" className="mb-2 block text-sm font-medium text-gray-300">URL del archivo PDF</label>
-                <Input id="pdf-url" type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://huggingface.co/anioruberu/mp4/resolve/main/01.pdf" className="w-full bg-slate-800 border-slate-700 text-white placeholder-gray-500" />
+                <Input id="pdf-url" type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://example.com/archivo.pdf o enlace directo" className="w-full bg-slate-800 border-slate-700 text-white placeholder-gray-500" />
                 <label htmlFor="encode-pdf-url" className="mt-3 flex items-start gap-3 rounded-lg border border-slate-700 bg-slate-800/60 p-3 text-sm text-gray-300 cursor-pointer">
                   <input id="encode-pdf-url" type="checkbox" checked={encodeUrl} onChange={(e) => setEncodeUrl(e.target.checked)} className="mt-0.5 h-4 w-4 accent-indigo-600" />
                   <span><span className="block font-medium text-white">Codificar URL</span><span className="block text-xs text-gray-500">Aplica la misma codificación segura que la opción de videos.</span></span>
                 </label>
               </div>
               {error && <div className="rounded-lg border border-red-800 bg-red-900/20 p-3 text-sm text-red-300">{error}</div>}
-              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"><FileText className="mr-2 h-4 w-4" />Abrir PDF como manga</Button>
+              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"><FileText className="mr-2 h-4 w-4" />Abrir</Button>
             </form>
           </>
         )}
@@ -389,11 +389,9 @@ export default function HomePage() {
         )}
         {contentMode === "pdf" && (
           <div className="mt-8 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-            <h2 className="text-sm font-semibold text-white mb-3">URLs de manga compatibles:</h2>
+            <h2 className="text-sm font-semibold text-white mb-3">URL de PDF compatible:</h2>
             <ul className="text-xs text-gray-400 space-y-2">
-              <li>• Archivos PDF directos desde Hugging Face</li>
-              <li>• Enlaces directos que terminan en .pdf</li>
-              <li>• URLs públicas HTTPS con acceso al archivo PDF</li>
+              <li>• PDF</li>
             </ul>
           </div>
         )}
