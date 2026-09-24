@@ -96,17 +96,23 @@ export function MangaViewer({ pdfUrl }: MangaViewerProps) {
           const pageCanvas = pageCanvasRefs.current[pageNumber]
           if (!pageCanvas) return
           const page = await pdf.getPage(pageNumber)
-          const context = pageCanvas.getContext('2d')
+          const context = pageCanvas.getContext('2d', { alpha: false })
           if (!context) return
 
           const viewport = page.getViewport({ scale: 1 })
           pageCanvas.width = viewport.width
           pageCanvas.height = viewport.height
           context.save()
+          context.globalCompositeOperation = 'copy'
           context.fillStyle = '#ffffff'
           context.fillRect(0, 0, viewport.width, viewport.height)
           context.restore()
-          await page.render({ canvasContext: context, viewport, background: '#ffffff' }).promise
+          await page.render({
+            canvasContext: context,
+            viewport,
+            intent: 'display',
+            background: '#ffffff',
+          }).promise
         }))
       } catch (err) {
         console.error('[v0] Error renderizando páginas:', err)
