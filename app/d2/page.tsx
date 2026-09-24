@@ -29,7 +29,14 @@ function DownloadContent() {
 
   useEffect(() => {
     const curlValue = searchParams.get("curl")
-    const sourceValue = curlValue ?? searchParams.get("url")
+    const directUrl = searchParams.get("url")
+    if (directUrl && !curlValue) {
+      const verificationUrl = new URL("/verificar-descargar2", window.location.origin)
+      verificationUrl.searchParams.set("curl", encodeVideoUrl(decodeVideoUrl(directUrl) || directUrl))
+      window.location.replace(verificationUrl.toString())
+      return
+    }
+    const sourceValue = curlValue ?? directUrl
     if (curlValue && !curlValue.startsWith("v1_")) {
       const normalizedParams = new URLSearchParams(searchParams.toString())
       normalizedParams.set("curl", encodeVideoUrl(curlValue))
