@@ -209,19 +209,32 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   useEffect(() => {
     if (!isAutoScrolling || readingMode !== 'normal') return
 
-    const timer = window.setInterval(() => {
+    let timer: number | undefined
+    const tick = () => {
       const container = documentScrollRef.current
-      if (!container) return
-      if (container.scrollHeight <= container.clientHeight) return
-      const atEnd = container.scrollTop + container.clientHeight >= container.scrollHeight - 2
-      if (atEnd) {
+      if (!container) {
+        timer = window.setTimeout(tick, 100)
+        return
+      }
+
+      const maxScrollTop = container.scrollHeight - container.clientHeight
+      if (maxScrollTop <= 0) {
+        timer = window.setTimeout(tick, 100)
+        return
+      }
+      if (container.scrollTop >= maxScrollTop - 2) {
         setIsAutoScrolling(false)
         return
       }
-      container.scrollTop = Math.min(container.scrollTop + 2, container.scrollHeight - container.clientHeight)
-    }, 45)
 
-    return () => window.clearInterval(timer)
+      container.scrollTop = Math.min(container.scrollTop + 1, maxScrollTop)
+      timer = window.setTimeout(tick, 50)
+    }
+
+    timer = window.setTimeout(tick, 50)
+    return () => {
+      if (timer !== undefined) window.clearTimeout(timer)
+    }
   }, [isAutoScrolling, readingMode])
 
   const toggleAutoScroll = () => {
