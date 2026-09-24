@@ -27,6 +27,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   const [readingMode, setReadingMode] = useState<'manga' | 'normal'>('manga')
   const [toolbarVisible, setToolbarVisible] = useState(true)
   const [isAutoScrolling, setIsAutoScrolling] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pdf, setPdf] = useState<any>(null)
@@ -226,6 +227,12 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
     else await viewerRef.current.requestFullscreen()
   }
 
+  useEffect(() => {
+    const updateFullscreen = () => setIsFullscreen(document.fullscreenElement === viewerRef.current)
+    document.addEventListener('fullscreenchange', updateFullscreen)
+    return () => document.removeEventListener('fullscreenchange', updateFullscreen)
+  }, [])
+
   const handleDownload = () => {
     const verificationUrl = new URL(downloadPath === '/descargar2' ? '/verificar-descargar2' : '/verificar-descargar', window.location.origin)
     verificationUrl.searchParams.set('curl', encodeVideoUrl(decodedPdfUrl))
@@ -272,8 +279,8 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           <Button size="icon" variant="ghost" className={readingMode === 'normal' ? activeColor : ''} onClick={() => switchReadingMode('normal')} title="Lectura normal de arriba hacia abajo" aria-label="Lectura normal de arriba hacia abajo"><Rows3 className="h-4 w-4" /></Button>
           {readingMode === 'normal' && <Button size="icon" variant="ghost" className={isAutoScrolling ? activeColor : ''} onClick={() => setIsAutoScrolling((playing) => !playing)} title={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'} aria-label={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'}>{isAutoScrolling ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}</Button>}
           <div className="my-1 h-px w-6 bg-slate-700" />
-          <Button size="icon" variant="ghost" onClick={handleDownload} title="Descargar PDF" aria-label="Descargar PDF"><Download className="h-4 w-4" /></Button>
-          <Button size="icon" variant="ghost" onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" className={activeColor} onClick={handleDownload} title="Descargar PDF" aria-label="Descargar PDF"><Download className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" className={isFullscreen ? activeColor : ''} onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" onClick={() => setToolbarVisible((visible) => !visible)} title={toolbarVisible ? 'Ocultar controles' : 'Mostrar controles'} aria-label={toolbarVisible ? 'Ocultar controles' : 'Mostrar controles'}>
             {toolbarVisible ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
           </Button>
