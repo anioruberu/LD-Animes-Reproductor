@@ -2,8 +2,8 @@ export function getDownloadFilename(value: string) {
   try {
     const pathname = new URL(value).pathname
     const filename = decodeURIComponent(pathname.split("/").pop() ?? "").trim()
-    return filename || "video.mp4"
+    return filename || "archivo.bin"
   } catch {
-    return "video.mp4"
+    return "archivo.bin"
   }
 }

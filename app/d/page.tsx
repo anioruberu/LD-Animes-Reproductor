@@ -11,7 +11,8 @@ import { getDownloadFilename } from "@/lib/download-filename"
 function DownloadContent() {
   const searchParams = useSearchParams()
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
-  const [filename, setFilename] = useState("video.mp4")
+  const [filename, setFilename] = useState("archivo.bin")
+  const [fileType, setFileType] = useState<"video" | "pdf">("video")
   const [error, setError] = useState<string | null>(null)
   const [downloading, setDownloading] = useState(false)
   const [secondsLeft, setSecondsLeft] = useState(60)
@@ -44,12 +45,14 @@ function DownloadContent() {
     const isHuggingFace = url.includes("huggingface.co") && (url.endsWith(".mkv") || url.endsWith(".mp4"))
     const isZillaNetworks = url.includes("player.zilla-networks.com") || url.includes(".m3u8")
     const isDirectVideo = url.match(/\.(mp4|mkv|webm|avi|mov)(\?.*)?$/i)
+    const isPdf = url.match(/\.pdf(\?.*)?$/i)
 
-    if (!isPixelDrain && !isHuggingFace && !isZillaNetworks && !isDirectVideo) {
+    if (!isPdf && !isPixelDrain && !isHuggingFace && !isZillaNetworks && !isDirectVideo) {
       setError("URL no compatible")
       return
     }
 
+    setFileType(isPdf ? "pdf" : "video")
     let processedUrl = decodeURIComponent(url)
 
     if (isPixelDrain) {
@@ -90,22 +93,34 @@ function DownloadContent() {
 
     try {
       const isHuggingFace = videoUrl.includes("huggingface.co")
+      const isPdf = fileType === "pdf" || /\.pdf(\?|$)/i.test(videoUrl)
       const isZillaNetworks = videoUrl.includes("player.zilla-networks.com") || videoUrl.includes(".m3u8")
+
+      // Los PDF pasan por el proxy para evitar CORS y se descargan como archivo.
+      if (isPdf) {
+        const response = await fetch(videoUrl)
+        if (!response.ok) throw new Error("Error al descargar el PDF")
+        const blobUrl = window.URL.createObjectURL(await response.blob())
+        const link = document.createElement("a")
+        link.href = blobUrl
+        link.download = filename.endsWith(".pdf") ? filename : `${filename}.pdf`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(blobUrl)
+        return
+      }
 
       // Para HuggingFace: descarga directa rápida del navegador
       if (isHuggingFace) {
-        let downloadUrl = videoUrl
-        if (!videoUrl.includes("?download=true")) {
-          downloadUrl = `${videoUrl}?download=true`
-        }
-
+        const downloadTarget = new URL(videoUrl)
+        downloadTarget.searchParams.set("download", "true")
         const link = document.createElement("a")
-        link.href = downloadUrl
+        link.href = downloadTarget.toString()
         link.download = filename
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
-        setDownloading(false)
         return
       }
 
@@ -125,7 +140,7 @@ function DownloadContent() {
       document.body.removeChild(link)
       window.URL.revokeObjectURL(blobUrl)
     } catch (err) {
-      setError("Error al descargar el video. Intenta de nuevo.")
+      setError(`Error al descargar el ${fileType === "pdf" ? "PDF" : "video"}. Intenta de nuevo.`)
       console.error("[v0] Download error:", err)
     } finally {
       setDownloading(false)
@@ -172,7 +187,7 @@ function DownloadContent() {
               <Download className="h-8 w-8 text-white fill-white" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Descargar Video</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Descargar {fileType === "pdf" ? "PDF" : "Video"}</h1>
           <p className="text-gray-400">Haz clic para descargar tu video</p>
           <p className="mt-2 text-sm text-gray-300">Archivo: <span className="font-medium text-white">{filename}</span></p>
         </div>
