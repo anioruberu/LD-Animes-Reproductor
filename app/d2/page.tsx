@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { decodeVideoUrl, encodeVideoUrl } from "@/lib/url-codec"
 import { getHuggingFaceProxyUrl } from "@/lib/huggingface"
 import { getDownloadFilename } from "@/lib/download-filename"
-import { MonetagRouteAds } from "@/components/monetag-route-ads"
 
 function DownloadContent() {
   const searchParams = useSearchParams()
@@ -37,6 +36,13 @@ function DownloadContent() {
       return
     }
     const sourceValue = curlValue ?? directUrl
+    const verified = searchParams.get("verified") === "1"
+    if (curlValue && !verified) {
+      const verificationUrl = new URL("/verificar-descargar2", window.location.origin)
+      verificationUrl.searchParams.set("curl", curlValue.startsWith("v1_") ? curlValue : encodeVideoUrl(curlValue))
+      window.location.replace(verificationUrl.toString())
+      return
+    }
     if (curlValue && !curlValue.startsWith("v1_")) {
       const normalizedParams = new URLSearchParams(searchParams.toString())
       normalizedParams.set("curl", encodeVideoUrl(curlValue))
@@ -143,7 +149,6 @@ function DownloadContent() {
   if (error) {
     return (
       <>
-        <MonetagRouteAds serviceWorkerPath="/descargar2/sw.js" />
         <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center p-4">
         <div className="text-center text-white max-w-md">
           <div className="mb-6">
@@ -166,7 +171,6 @@ function DownloadContent() {
   if (!videoUrl) {
     return (
       <>
-        <MonetagRouteAds serviceWorkerPath="/descargar2/sw.js" />
         <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center">
         <div className="text-center text-white">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400 mx-auto mb-4"></div>
@@ -179,7 +183,6 @@ function DownloadContent() {
 
   return (
     <>
-      <MonetagRouteAds serviceWorkerPath="/descargar2/sw.js" />
       <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
