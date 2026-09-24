@@ -15,10 +15,12 @@ pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pd
 interface MangaViewerProps {
   pdfUrl: string
   theme?: 'blue' | 'orange'
+  downloadPath?: '/descargar' | '/descargar2'
 }
 
-export function MangaViewer({ pdfUrl, theme = 'blue' }: MangaViewerProps) {
+export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar' }: MangaViewerProps) {
   const isOrange = theme === 'orange'
+  const activeColor = isOrange ? 'bg-orange-500 hover:bg-orange-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
   const decodedPdfUrl = decodeVideoUrlParam(pdfUrl) || pdfUrl
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
@@ -225,7 +227,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue' }: MangaViewerProps) {
   }
 
   const handleDownload = () => {
-    const verificationUrl = new URL('/verificar-descargar', window.location.origin)
+    const verificationUrl = new URL(downloadPath === '/descargar2' ? '/verificar-descargar2' : '/verificar-descargar', window.location.origin)
     verificationUrl.searchParams.set('curl', encodeVideoUrl(decodedPdfUrl))
     window.location.href = verificationUrl.toString()
   }
@@ -266,9 +268,9 @@ export function MangaViewer({ pdfUrl, theme = 'blue' }: MangaViewerProps) {
             </>
           )}
           <div className="my-1 h-px w-6 bg-slate-700" />
-          <Button size="icon" variant={readingMode === 'manga' ? 'default' : 'ghost'} className={isOrange && readingMode === 'manga' ? 'bg-orange-500 hover:bg-orange-600' : ''} onClick={() => switchReadingMode('manga')} title="Lectura manga" aria-label="Lectura manga"><BookOpen className="h-4 w-4" /></Button>
-          <Button size="icon" variant={readingMode === 'normal' ? 'default' : 'ghost'} className={isOrange && readingMode === 'normal' ? 'bg-orange-500 hover:bg-orange-600' : ''} onClick={() => switchReadingMode('normal')} title="Lectura normal de arriba hacia abajo" aria-label="Lectura normal de arriba hacia abajo"><Rows3 className="h-4 w-4" /></Button>
-          {readingMode === 'normal' && <Button size="icon" variant={isAutoScrolling ? 'default' : 'ghost'} onClick={() => setIsAutoScrolling((playing) => !playing)} title={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'} aria-label={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'}>{isAutoScrolling ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}</Button>}
+          <Button size="icon" variant="ghost" className={readingMode === 'manga' ? activeColor : ''} onClick={() => switchReadingMode('manga')} title="Lectura manga" aria-label="Lectura manga"><BookOpen className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" className={readingMode === 'normal' ? activeColor : ''} onClick={() => switchReadingMode('normal')} title="Lectura normal de arriba hacia abajo" aria-label="Lectura normal de arriba hacia abajo"><Rows3 className="h-4 w-4" /></Button>
+          {readingMode === 'normal' && <Button size="icon" variant="ghost" className={isAutoScrolling ? activeColor : ''} onClick={() => setIsAutoScrolling((playing) => !playing)} title={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'} aria-label={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'}>{isAutoScrolling ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}</Button>}
           <div className="my-1 h-px w-6 bg-slate-700" />
           <Button size="icon" variant="ghost" onClick={handleDownload} title="Descargar PDF" aria-label="Descargar PDF"><Download className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
@@ -281,7 +283,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue' }: MangaViewerProps) {
         {currentPage} / {totalPages}
       </div>
       <div ref={documentScrollRef} className={`h-screen w-full bg-slate-950 ${readingMode === 'normal' ? 'overflow-y-auto pt-20' : 'flex items-center justify-center overflow-hidden'}`}>
-        {loading ? <div className="text-gray-400">Cargando...</div> : (
+        {loading ? <div className="flex min-h-full w-full items-center justify-center text-gray-400">Cargando...</div> : (
           <div className={readingMode === 'normal' ? 'mx-auto flex w-full max-w-4xl flex-col items-center gap-2 px-2 pb-8' : 'flex h-full w-full items-center justify-center'}>
             {(readingMode === 'normal' ? Array.from({ length: totalPages }, (_, index) => index + 1) : [currentPage]).map((pageNumber) => (
               <canvas
