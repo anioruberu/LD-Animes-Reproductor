@@ -212,6 +212,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
     const timer = window.setInterval(() => {
       const container = documentScrollRef.current
       if (!container) return
+      if (container.scrollHeight <= container.clientHeight) return
       const atEnd = container.scrollTop + container.clientHeight >= container.scrollHeight - 2
       if (atEnd) {
         setIsAutoScrolling(false)
@@ -224,7 +225,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   }, [isAutoScrolling, readingMode])
 
   const toggleAutoScroll = () => {
-    if (readingMode !== 'normal' || !documentScrollRef.current) return
+    if (readingMode !== 'normal') return
     setIsAutoScrolling((playing) => !playing)
   }
 
