@@ -62,8 +62,26 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           throw new Error('The PDF response was empty')
         }
 
-        loadingTask = pdfjs.getDocument({ data })
-        const loadedPdf = await loadingTask.promise
+        const loadWithFallback = async () => {
+          loadingTask = pdfjs.getDocument({ data })
+          try {
+            return await loadingTask.promise
+          } catch (initialError) {
+            if (cancelled) throw initialError
+            console.warn('[v0] PDF requiere compatibilidad JBIG2/WASM; reintentando carga compatible')
+            loadingTask = pdfjs.getDocument({
+              data,
+              isOffscreenCanvasSupported: false,
+              useWorkerFetch: false,
+              useWasm: true,
+              isImageDecoderSupported: false,
+              wasmUrl: '/pdfjs/',
+            })
+            return await loadingTask.promise
+          }
+        }
+
+        const loadedPdf = await loadWithFallback()
         if (cancelled) return
 
         setPdf(loadedPdf)
