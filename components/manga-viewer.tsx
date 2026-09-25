@@ -62,14 +62,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           throw new Error('The PDF response was empty')
         }
 
-        loadingTask = pdfjs.getDocument({
-        data,
-        isOffscreenCanvasSupported: false,
-        useWorkerFetch: false,
-        useWasm: true,
-        isImageDecoderSupported: false,
-        wasmUrl: '/pdfjs/',
-      })
+        loadingTask = pdfjs.getDocument({ data })
         const loadedPdf = await loadingTask.promise
         if (cancelled) return
 
