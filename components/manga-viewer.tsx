@@ -68,6 +68,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
             return await loadingTask.promise
           } catch (initialError) {
             if (cancelled) throw initialError
+            await loadingTask.destroy()
             console.warn('[v0] PDF requiere compatibilidad JBIG2/WASM; reintentando carga compatible')
             loadingTask = pdfjs.getDocument({
               data,
