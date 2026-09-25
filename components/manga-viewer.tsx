@@ -111,14 +111,14 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           const pageCanvas = pageCanvasRefs.current[pageNumber]
           if (!pageCanvas) continue
           const page = await pdf.getPage(pageNumber)
-          const context = pageCanvas.getContext('2d', { alpha: true })
+          const context = pageCanvas.getContext('2d', { alpha: false })
           if (!context) continue
 
           const viewport = page.getViewport({ scale: 1 })
           pageCanvas.width = viewport.width
           pageCanvas.height = viewport.height
           context.save()
-          context.globalCompositeOperation = 'source-over'
+          context.globalCompositeOperation = 'copy'
           context.fillStyle = '#ffffff'
           context.fillRect(0, 0, viewport.width, viewport.height)
           context.restore()
