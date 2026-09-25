@@ -148,7 +148,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
     }
 
     renderPages()
-  }, [pdf, readingMode])
+  }, [pdf, readingMode, readingMode === 'manga' ? currentPage : null])
 
   const getVisiblePage = () => {
     const container = documentScrollRef.current
