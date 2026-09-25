@@ -35,6 +35,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   const documentScrollRef = useRef<HTMLDivElement>(null)
   const pageCanvasRefs = useRef<Record<number, HTMLCanvasElement | null>>({})
   const currentPageRef = useRef(1)
+  const normalRenderedPdfRef = useRef<any>(null)
 
   // Cargar PDF
   useEffect(() => {
@@ -62,22 +63,25 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           throw new Error('The PDF response was empty')
         }
 
+        const hasJbig2Images = new TextDecoder().decode(data).includes('/JBIG2Decode')
+        const compatibleOptions = {
+          data,
+          isOffscreenCanvasSupported: false,
+          useWorkerFetch: false,
+          useWasm: true,
+          isImageDecoderSupported: false,
+          wasmUrl: '/pdfjs/',
+        }
+
         const loadWithFallback = async () => {
-          loadingTask = pdfjs.getDocument({ data })
+          loadingTask = pdfjs.getDocument(hasJbig2Images ? compatibleOptions : { data })
           try {
             return await loadingTask.promise
           } catch (initialError) {
             if (cancelled) throw initialError
             await loadingTask.destroy()
             console.warn('[v0] PDF requiere compatibilidad JBIG2/WASM; reintentando carga compatible')
-            loadingTask = pdfjs.getDocument({
-              data,
-              isOffscreenCanvasSupported: false,
-              useWorkerFetch: false,
-              useWasm: true,
-              isImageDecoderSupported: false,
-              wasmUrl: '/pdfjs/',
-            })
+            loadingTask = pdfjs.getDocument(compatibleOptions)
             return await loadingTask.promise
           }
         }
@@ -113,6 +117,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   useEffect(() => {
     const renderPages = async () => {
       if (!pdf) return
+      if (readingMode === 'normal' && normalRenderedPdfRef.current === pdf) return
 
       const pages = readingMode === 'normal'
         ? Array.from({ length: pdf.numPages }, (_, index) => index + 1)
@@ -142,13 +147,14 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           }).promise
           page.cleanup()
         }
+        if (readingMode === 'normal') normalRenderedPdfRef.current = pdf
       } catch (err) {
         console.error('[v0] Error renderizando páginas:', err)
       }
     }
 
     renderPages()
-  }, [pdf, readingMode, readingMode === 'manga' ? currentPage : null])
+  }, [pdf, readingMode, currentPage])
 
   const getVisiblePage = () => {
     const container = documentScrollRef.current
