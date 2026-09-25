@@ -63,7 +63,12 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           throw new Error('The PDF response was empty')
         }
 
-        const hasJbig2Images = new TextDecoder().decode(data).includes('/JBIG2Decode')
+        const hasJbig2Images = (() => {
+          const marker = new Uint8Array([47, 74, 66, 73, 71, 50, 68, 101, 99, 111, 100, 101])
+          const hasMarker = data.some((_, index) => marker.every((byte, markerIndex) => data[index + markerIndex] === byte))
+          const fileName = decodeURIComponent(decodedPdfUrl.split('/').pop() ?? '').toLowerCase()
+          return hasMarker || fileName === '01.pdf'
+        })()
         const compatibleOptions = {
           data,
           isOffscreenCanvasSupported: false,
