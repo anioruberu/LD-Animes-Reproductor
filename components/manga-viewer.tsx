@@ -36,6 +36,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   const pageCanvasRefs = useRef<Record<number, HTMLCanvasElement | null>>({})
   const currentPageRef = useRef(1)
   const normalRenderedPdfRef = useRef<any>(null)
+  const highResolutionPdfRef = useRef(false)
 
   // Cargar PDF
   useEffect(() => {
@@ -69,6 +70,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           const fileName = decodeURIComponent(decodedPdfUrl.split('/').pop() ?? '').toLowerCase()
           return hasMarker || fileName === '01.pdf'
         })()
+        highResolutionPdfRef.current = hasJbig2Images
         const compatibleOptions = {
           data,
           isOffscreenCanvasSupported: false,
@@ -136,7 +138,8 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           const context = pageCanvas.getContext('2d', { alpha: true })
           if (!context) continue
 
-          const viewport = page.getViewport({ scale: 1 })
+          const renderScale = highResolutionPdfRef.current ? 1.5 : 1
+          const viewport = page.getViewport({ scale: renderScale })
           pageCanvas.width = viewport.width
           pageCanvas.height = viewport.height
           context.save()
