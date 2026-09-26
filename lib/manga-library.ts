@@ -16,13 +16,26 @@ function getProgressMap(): Record<string, number> {
   }
 }
 
+function getProgressKey(url: string) {
+  try {
+    const parsedUrl = new URL(url)
+    parsedUrl.search = ""
+    parsedUrl.hash = ""
+    return parsedUrl.toString().replace(/\/$/, "")
+  } catch {
+    return url.split(/[?#]/, 1)[0].replace(/\/$/, "")
+  }
+}
+
 export function readMangaProgress(url: string) {
-  const page = getProgressMap()[url]
+  const progressMap = getProgressMap()
+  const page = progressMap[getProgressKey(url)] ?? progressMap[url]
   return typeof page === "number" && page > 0 ? page : 1
 }
 
 export function saveMangaProgress(url: string, page: number) {
-  localStorage.setItem(MANGA_PROGRESS_STORAGE_KEY, JSON.stringify({ ...getProgressMap(), [url]: page }))
+  const key = getProgressKey(url)
+  localStorage.setItem(MANGA_PROGRESS_STORAGE_KEY, JSON.stringify({ ...getProgressMap(), [key]: page }))
 }
 
 export function getMangaTitle(url: string) {
