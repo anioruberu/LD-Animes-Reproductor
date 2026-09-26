@@ -27,6 +27,8 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   const [totalPages, setTotalPages] = useState(0)
   const [readingMode, setReadingMode] = useState<'manga' | 'normal'>('manga')
   const [toolbarVisible, setToolbarVisible] = useState(true)
+  const [floatingButtonPosition, setFloatingButtonPosition] = useState({ x: 16, y: 50 })
+  const floatingDragRef = useRef({ active: false, moved: false, offsetX: 0, offsetY: 0 })
   const [isAutoScrolling, setIsAutoScrolling] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -301,6 +303,26 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
     window.location.href = verificationUrl.toString()
   }
 
+  const handleFloatingPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId)
+    const rect = event.currentTarget.getBoundingClientRect()
+    floatingDragRef.current = { active: true, moved: false, offsetX: event.clientX - rect.left, offsetY: event.clientY - rect.top }
+  }
+
+  const handleFloatingPointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (!floatingDragRef.current.active) return
+    floatingDragRef.current.moved = true
+    const size = 44
+    const x = Math.min(Math.max(event.clientX - floatingDragRef.current.offsetX, 8), window.innerWidth - size - 8)
+    const y = Math.min(Math.max(event.clientY - floatingDragRef.current.offsetY, 8), window.innerHeight - size - 8)
+    setFloatingButtonPosition({ x, y })
+  }
+
+  const handleFloatingPointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
+    floatingDragRef.current.active = false
+    event.currentTarget.releasePointerCapture(event.pointerId)
+  }
+
   if (!decodedPdfUrl) return null
 
   if (error) {
@@ -348,6 +370,24 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           </Button>
         </div>
       </div>}
+      {!toolbarVisible && (
+        <Button
+          size="icon"
+          variant="ghost"
+          className={`fixed z-40 size-11 cursor-grab rounded-full border ${isOrange ? 'border-orange-400/40 bg-orange-950/45' : 'border-slate-500/40 bg-slate-900/45'} text-white/75 shadow-lg backdrop-blur-sm transition-colors hover:bg-slate-800/75 hover:text-white active:cursor-grabbing`}
+          style={{ left: floatingButtonPosition.x, top: floatingButtonPosition.y }}
+          onPointerDown={handleFloatingPointerDown}
+          onPointerMove={handleFloatingPointerMove}
+          onPointerUp={handleFloatingPointerUp}
+          onClick={() => {
+            if (!floatingDragRef.current.moved) setToolbarVisible(true)
+          }}
+          title="Mostrar controles"
+          aria-label="Mostrar controles"
+        >
+          <PanelLeftOpen />
+        </Button>
+      )}
       <div className="pointer-events-none fixed right-3 top-3 z-30 rounded-full border border-slate-600/80 bg-slate-900/90 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-md sm:right-5 sm:top-5 sm:px-4 sm:py-2 sm:text-sm">
         {currentPage} / {totalPages}
       </div>
