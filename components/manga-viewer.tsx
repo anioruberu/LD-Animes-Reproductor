@@ -37,6 +37,8 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   const currentPageRef = useRef(1)
   const normalRenderedPdfRef = useRef<any>(null)
   const highResolutionPdfRef = useRef(false)
+  const renderedPagesRef = useRef(new WeakMap<object, Set<number>>())
+  const renderingPagesRef = useRef(new WeakMap<object, Set<number>>())
 
   // Cargar PDF
   useEffect(() => {
@@ -129,11 +131,17 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
       const pages = readingMode === 'normal'
         ? Array.from({ length: pdf.numPages }, (_, index) => index + 1)
         : [currentPage]
+      const renderedPages = renderedPagesRef.current.get(pdf) ?? new Set<number>()
+      const renderingPages = renderingPagesRef.current.get(pdf) ?? new Set<number>()
+      renderedPagesRef.current.set(pdf, renderedPages)
+      renderingPagesRef.current.set(pdf, renderingPages)
       try {
         for (const [index, pageNumber] of pages.entries()) {
+          if (renderedPages.has(pageNumber) || renderingPages.has(pageNumber)) continue
           if (index > 0) await new Promise<void>((resolve) => window.setTimeout(resolve, 0))
           const pageCanvas = pageCanvasRefs.current[pageNumber]
           if (!pageCanvas) continue
+          renderingPages.add(pageNumber)
           const page = await pdf.getPage(pageNumber)
           const context = pageCanvas.getContext('2d', { alpha: true })
           if (!context) continue
@@ -154,6 +162,8 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
             background: '#ffffff',
           }).promise
           page.cleanup()
+          renderingPages.delete(pageNumber)
+          renderedPages.add(pageNumber)
         }
         if (readingMode === 'normal') normalRenderedPdfRef.current = pdf
       } catch (err) {
