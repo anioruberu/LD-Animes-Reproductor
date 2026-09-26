@@ -1,8 +1,11 @@
 'use client'
 
 import { useState, useEffect, useRef, type TouchEvent, type TouchList } from 'react'
-import { ChevronLeft, ChevronRight, Download, Maximize, BookOpen, Rows3, PanelLeftClose, PanelLeftOpen, Play, Pause } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Maximize, BookOpen, Rows3, PanelLeftClose, PanelLeftOpen, Play, Pause, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Switch } from '@/components/ui/switch'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import Link from 'next/link'
 import * as pdfjs from 'pdfjs-dist'
 import { getHuggingFaceProxyUrl } from '@/lib/huggingface'
@@ -27,7 +30,12 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   const [totalPages, setTotalPages] = useState(0)
   const [readingMode, setReadingMode] = useState<'manga' | 'normal'>('manga')
   const [toolbarVisible, setToolbarVisible] = useState(true)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [floatingButtonEnabled, setFloatingButtonEnabled] = useState(true)
+  const [floatingButtonFixed, setFloatingButtonFixed] = useState(false)
   const [floatingButtonPosition, setFloatingButtonPosition] = useState({ x: 16, y: 50 })
+  const [floatingButtonPlacement, setFloatingButtonPlacement] = useState<'left' | 'right' | 'top' | 'bottom'>('left')
+  const [viewerBackground, setViewerBackground] = useState<'black' | 'white'>('black')
   const floatingDragRef = useRef({ active: false, moved: false, offsetX: 0, offsetY: 0 })
   const [isAutoScrolling, setIsAutoScrolling] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -331,6 +339,9 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
     }
   }
 
+  const backgroundClass = viewerBackground === 'white' ? 'bg-white' : 'bg-slate-950'
+  const floatingPlacementClass = floatingButtonPlacement === 'right' ? 'right-4 left-auto' : floatingButtonPlacement === 'top' ? 'top-4 left-1/2 -translate-x-1/2' : floatingButtonPlacement === 'bottom' ? 'bottom-4 top-auto left-1/2 -translate-x-1/2' : ''
+
   if (!decodedPdfUrl) return null
 
   if (error) {
@@ -351,7 +362,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   return (
     <div
       ref={viewerRef}
-      className="relative min-h-screen overflow-hidden bg-slate-950 touch-auto"
+      className={`relative min-h-screen overflow-hidden ${backgroundClass} touch-auto`}
     >
       <div className="pointer-events-none fixed inset-x-0 top-0 z-30 px-3 pt-2 sm:px-5 sm:pt-3">
         <div className="mx-auto h-1.5 w-full max-w-3xl overflow-hidden rounded-full bg-slate-800/90 shadow-lg ring-1 ring-slate-700/70" role="progressbar" aria-label="Progreso de lectura" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
@@ -373,21 +384,56 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           <div className="my-1 h-px w-6 bg-slate-700" />
           <Button size="icon" variant="ghost" className={activeColor} onClick={handleDownload} title="Descargar PDF" aria-label="Descargar PDF"><Download className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" className={isFullscreen ? activeColor : neutralControl} onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
-          <Button size="icon" variant="ghost" onClick={() => setToolbarVisible((visible) => !visible)} title={toolbarVisible ? 'Ocultar controles' : 'Mostrar controles'} aria-label={toolbarVisible ? 'Ocultar controles' : 'Mostrar controles'}>
-            {toolbarVisible ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
-          </Button>
+          <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+            <DialogTrigger asChild>
+              <Button size="icon" variant="ghost" className={neutralControl} title="Ajustes del visor" aria-label="Ajustes del visor"><Settings className="h-4 w-4" /></Button>
+            </DialogTrigger>
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Ajustes del visor</DialogTitle>
+                <DialogDescription>Personaliza los controles y la apariencia de este visor.</DialogDescription>
+              </DialogHeader>
+              <div className="flex flex-col gap-5 py-2">
+                <div className="flex items-center justify-between gap-4">
+                  <div><p className="font-medium">Botón flotante</p><p className="text-sm text-muted-foreground">Permite volver a mostrar el menú oculto.</p></div>
+                  <Switch checked={floatingButtonEnabled} onCheckedChange={setFloatingButtonEnabled} aria-label="Mostrar botón flotante" />
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <div><p className="font-medium">Menú flotante fijo</p><p className="text-sm text-muted-foreground">Evita que el botón se mueva al arrastrarlo.</p></div>
+                  <Switch checked={floatingButtonFixed} onCheckedChange={setFloatingButtonFixed} aria-label="Fijar menú flotante" />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p className="font-medium">Posición del botón</p>
+                  <ToggleGroup type="single" value={floatingButtonPlacement} onValueChange={(value) => value && setFloatingButtonPlacement(value as typeof floatingButtonPlacement)} className="grid grid-cols-4">
+                    <ToggleGroupItem value="left" aria-label="Izquierda">Izquierda</ToggleGroupItem>
+                    <ToggleGroupItem value="right" aria-label="Derecha">Derecha</ToggleGroupItem>
+                    <ToggleGroupItem value="top" aria-label="Arriba">Arriba</ToggleGroupItem>
+                    <ToggleGroupItem value="bottom" aria-label="Abajo">Abajo</ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p className="font-medium">Fondo del visor</p>
+                  <ToggleGroup type="single" value={viewerBackground} onValueChange={(value) => value && setViewerBackground(value as typeof viewerBackground)} className="grid grid-cols-2">
+                    <ToggleGroupItem value="black" aria-label="Fondo negro">Negro</ToggleGroupItem>
+                    <ToggleGroupItem value="white" aria-label="Fondo blanco">Blanco</ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button size="icon" variant="ghost" onClick={() => setToolbarVisible((visible) => !visible)} title="Ocultar controles" aria-label="Ocultar controles"><PanelLeftClose className="h-4 w-4" /></Button>
         </div>
       </div>}
-      {!toolbarVisible && (
+      {!toolbarVisible && floatingButtonEnabled && (
         <Button
           size="icon"
           variant="ghost"
-          className={`fixed z-40 size-11 touch-none cursor-grab rounded-full border ${isOrange ? 'border-orange-400/40 bg-orange-950/45' : 'border-slate-500/40 bg-slate-900/45'} text-white/75 shadow-lg backdrop-blur-sm transition-colors hover:bg-slate-800/75 hover:text-white active:cursor-grabbing`}
-          style={{ left: floatingButtonPosition.x, top: floatingButtonPosition.y }}
-          onPointerDown={handleFloatingPointerDown}
-          onPointerMove={handleFloatingPointerMove}
-          onPointerUp={finishFloatingPointer}
-          onPointerCancel={finishFloatingPointer}
+          className={`fixed z-40 size-11 touch-none rounded-full border ${floatingButtonFixed ? 'cursor-default' : 'cursor-grab'} ${floatingPlacementClass} ${isOrange ? 'border-orange-400/40 bg-orange-950/45' : 'border-slate-500/40 bg-slate-900/45'} text-white/75 shadow-lg backdrop-blur-sm transition-colors hover:bg-slate-800/75 hover:text-white active:cursor-grabbing`}
+          style={floatingButtonPlacement === 'left' ? { left: floatingButtonPosition.x, top: floatingButtonPosition.y } : floatingButtonPlacement === 'right' ? { top: floatingButtonPosition.y } : floatingButtonPlacement === 'top' || floatingButtonPlacement === 'bottom' ? { left: '50%' } : undefined}
+          onPointerDown={floatingButtonFixed ? undefined : handleFloatingPointerDown}
+          onPointerMove={floatingButtonFixed ? undefined : handleFloatingPointerMove}
+          onPointerUp={floatingButtonFixed ? undefined : finishFloatingPointer}
+          onPointerCancel={floatingButtonFixed ? undefined : finishFloatingPointer}
           onClick={() => {
             if (!floatingDragRef.current.moved) setToolbarVisible(true)
           }}
