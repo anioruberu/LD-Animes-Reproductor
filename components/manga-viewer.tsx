@@ -499,12 +499,12 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
         <Button
           size="icon"
           variant="ghost"
-          className={`fixed z-40 size-11 touch-none rounded-full border ${floatingButtonFixed ? 'cursor-default' : 'cursor-grab'} ${floatingPlacementClass} ${isOrange ? 'border-orange-400/40 bg-orange-950/45' : 'border-slate-500/40 bg-slate-900/45'} text-white/75 shadow-lg backdrop-blur-sm transition-colors hover:bg-slate-800/75 hover:text-white active:cursor-grabbing`}
-          style={floatingButtonPlacement === 'left' ? { left: floatingButtonPosition.x, top: floatingButtonPosition.y } : floatingButtonPlacement === 'right' ? { top: floatingButtonPosition.y } : floatingButtonPlacement === 'top' || floatingButtonPlacement === 'bottom' ? { left: '50%' } : undefined}
-          onPointerDown={floatingButtonFixed ? undefined : handleFloatingPointerDown}
-          onPointerMove={floatingButtonFixed ? undefined : handleFloatingPointerMove}
-          onPointerUp={floatingButtonFixed ? undefined : finishFloatingPointer}
-          onPointerCancel={floatingButtonFixed ? undefined : finishFloatingPointer}
+          className={`fixed z-40 size-11 touch-none rounded-full border cursor-grab ${floatingPlacementClass} ${isOrange ? 'border-orange-400/40 bg-orange-950/45' : 'border-slate-500/40 bg-slate-900/45'} text-white/75 shadow-lg backdrop-blur-sm transition-colors hover:bg-slate-800/75 hover:text-white active:cursor-grabbing`}
+          style={floatingButtonPlacement === 'left' ? { left: floatingButtonPosition.x, top: floatingButtonPosition.y } : floatingButtonPlacement === 'right' ? { right: floatingButtonPosition.x, top: floatingButtonPosition.y } : floatingButtonPlacement === 'top' ? { left: floatingButtonPosition.x, top: floatingButtonPosition.y } : { left: floatingButtonPosition.x, bottom: Math.max(8, window.innerHeight - floatingButtonPosition.y - 44) }}
+          onPointerDown={handleFloatingPointerDown}
+          onPointerMove={handleFloatingPointerMove}
+          onPointerUp={finishFloatingPointer}
+          onPointerCancel={finishFloatingPointer}
           onClick={() => {
             if (!floatingDragRef.current.moved) setToolbarVisible(true)
           }}
