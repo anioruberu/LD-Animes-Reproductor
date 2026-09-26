@@ -36,6 +36,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   const [floatingButtonPosition, setFloatingButtonPosition] = useState({ x: 16, y: 50 })
   const [floatingButtonPlacement, setFloatingButtonPlacement] = useState<'left' | 'right' | 'top' | 'bottom'>('left')
   const [viewerBackground, setViewerBackground] = useState<'black' | 'white'>('black')
+  const [settingsHydrated, setSettingsHydrated] = useState(false)
   const floatingDragRef = useRef({ active: false, moved: false, offsetX: 0, offsetY: 0 })
   const [isAutoScrolling, setIsAutoScrolling] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -50,6 +51,43 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   const highResolutionPdfRef = useRef(false)
   const renderedPagesRef = useRef(new WeakMap<object, Set<number>>())
   const renderingPagesRef = useRef(new WeakMap<object, Set<number>>())
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(`manga-viewer-settings:${theme}`)
+      if (saved) {
+        const parsed = JSON.parse(saved) as {
+          floatingButtonEnabled?: boolean
+          floatingButtonFixed?: boolean
+          floatingButtonPosition?: { x?: number; y?: number }
+          floatingButtonPlacement?: 'left' | 'right' | 'top' | 'bottom'
+          viewerBackground?: 'black' | 'white'
+        }
+        if (typeof parsed.floatingButtonEnabled === 'boolean') setFloatingButtonEnabled(parsed.floatingButtonEnabled)
+        if (typeof parsed.floatingButtonFixed === 'boolean') setFloatingButtonFixed(parsed.floatingButtonFixed)
+        if (parsed.floatingButtonPosition && typeof parsed.floatingButtonPosition.x === 'number' && typeof parsed.floatingButtonPosition.y === 'number') {
+          setFloatingButtonPosition({ x: parsed.floatingButtonPosition.x, y: parsed.floatingButtonPosition.y })
+        }
+        if (parsed.floatingButtonPlacement) setFloatingButtonPlacement(parsed.floatingButtonPlacement)
+        if (parsed.viewerBackground) setViewerBackground(parsed.viewerBackground)
+      }
+    } catch (error) {
+      console.warn('[v0] No se pudieron cargar los ajustes del visor:', error)
+    } finally {
+      setSettingsHydrated(true)
+    }
+  }, [theme])
+
+  useEffect(() => {
+    if (!settingsHydrated) return
+    window.localStorage.setItem(`manga-viewer-settings:${theme}`, JSON.stringify({
+      floatingButtonEnabled,
+      floatingButtonFixed,
+      floatingButtonPosition,
+      floatingButtonPlacement,
+      viewerBackground,
+    }))
+  }, [settingsHydrated, theme, floatingButtonEnabled, floatingButtonFixed, floatingButtonPosition, floatingButtonPlacement, viewerBackground])
 
   // Cargar PDF
   useEffect(() => {
@@ -424,7 +462,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           <Button size="icon" variant="ghost" onClick={() => setToolbarVisible((visible) => !visible)} title="Ocultar controles" aria-label="Ocultar controles"><PanelLeftClose className="h-4 w-4" /></Button>
         </div>
       </div>}
-      {!toolbarVisible && floatingButtonEnabled && (
+      {!toolbarVisible && settingsHydrated && floatingButtonEnabled && (
         <Button
           size="icon"
           variant="ghost"
@@ -446,7 +484,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
       <div className="pointer-events-none fixed right-3 top-3 z-30 rounded-full border border-slate-600/80 bg-slate-900/90 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-md sm:right-5 sm:top-5 sm:px-4 sm:py-2 sm:text-sm">
         {currentPage} / {totalPages}
       </div>
-      <div ref={documentScrollRef} className={`h-screen w-full bg-slate-950 ${readingMode === 'normal' ? 'overflow-y-auto pt-20' : 'flex items-center justify-center overflow-hidden'}`}>
+      <div ref={documentScrollRef} className={`h-screen w-full ${backgroundClass} ${readingMode === 'normal' ? 'overflow-y-auto pt-20' : 'flex items-center justify-center overflow-hidden'}`}>
         {loading ? <div className="flex min-h-full w-full items-center justify-center text-gray-400">Cargando...</div> : (
           <div className={readingMode === 'normal' ? 'mx-auto flex w-full max-w-4xl flex-col items-center gap-2 px-2 pb-8' : 'flex h-full w-full items-center justify-center'}>
             {(readingMode === 'normal' ? Array.from({ length: totalPages }, (_, index) => index + 1) : [currentPage]).map((pageNumber) => (
