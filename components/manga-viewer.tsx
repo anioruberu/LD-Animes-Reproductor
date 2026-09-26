@@ -358,7 +358,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           <div className={`h-full rounded-full ${isOrange ? 'bg-orange-500' : 'bg-blue-500'} transition-[width] duration-200` } style={{ width: `${progress}%` }} />
         </div>
       </div>
-      {toolbarVisible && <div className="pointer-events-none absolute inset-y-0 left-2 z-10 flex items-center sm:left-4">
+      {toolbarVisible && <div className="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center sm:left-4">
         <div className={`pointer-events-auto flex origin-left scale-[0.82] flex-col items-center gap-1 rounded-2xl border ${isOrange ? 'border-orange-500/50 bg-orange-950/90' : 'border-slate-700/80 bg-slate-900/90'} p-1.5 shadow-2xl backdrop-blur-md sm:gap-2 sm:p-2`}>
           {readingMode === 'manga' && (
             <>
