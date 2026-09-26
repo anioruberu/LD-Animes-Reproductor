@@ -1092,7 +1092,7 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, 
                 size={isMobile ? "sm" : "default"}
                 onClick={handleButtonClick(togglePlay)}
                 disabled={!showControls || isLoading}
-                className="text-white hover:text-white hover:bg-white/20 focus:text-white focus:bg-transparent focus-visible:outline-none focus-visible:ring-0 active:text-white active:bg-transparent data-[state=open]:bg-transparent data-[state=open]:text-white disabled:pointer-events-none disabled:opacity-50 p-2"
+                className="!bg-transparent !text-white hover:!bg-white/20 hover:!text-white focus:!bg-transparent focus:!text-white focus-visible:!bg-transparent focus-visible:outline-none focus-visible:ring-0 active:!bg-transparent active:!text-white data-[state=open]:!bg-transparent data-[state=open]:!text-white disabled:pointer-events-none disabled:opacity-50 p-2"
               >
                 {isPlaying ? (
                   <Pause className={`${isMobile ? "h-5 w-5" : "h-6 w-6"}`} />
@@ -1165,7 +1165,7 @@ export function CustomVideoPlayerOrange({ src, title, onError, onLoad, onEnded, 
                 size="sm"
                 onClick={handleButtonClick(toggleFullscreen)}
                 disabled={!showControls || isLoading}
-                className="text-white hover:text-white hover:bg-white/20 focus:text-white focus:bg-transparent focus-visible:outline-none focus-visible:ring-0 active:text-white active:bg-transparent data-[state=open]:bg-transparent data-[state=open]:text-white disabled:pointer-events-none disabled:opacity-50 p-2"
+                className="!bg-transparent !text-white hover:!bg-white/20 hover:!text-white focus:!bg-transparent focus:!text-white focus-visible:!bg-transparent focus-visible:outline-none focus-visible:ring-0 active:!bg-transparent active:!text-white data-[state=open]:!bg-transparent data-[state=open]:!text-white disabled:pointer-events-none disabled:opacity-50 p-2"
               >
                 <Maximize className="h-4 w-4" />
               </Button>
