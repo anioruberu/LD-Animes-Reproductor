@@ -310,17 +310,25 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   }
 
   const handleFloatingPointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (!floatingDragRef.current.active) return
-    floatingDragRef.current.moved = true
+    const drag = floatingDragRef.current
+    if (!drag.active) return
+
+    const rect = event.currentTarget.getBoundingClientRect()
+    const movedX = Math.abs(event.clientX - (rect.left + drag.offsetX))
+    const movedY = Math.abs(event.clientY - (rect.top + drag.offsetY))
+    if (movedX > 6 || movedY > 6) drag.moved = true
+
     const size = 44
-    const x = Math.min(Math.max(event.clientX - floatingDragRef.current.offsetX, 8), window.innerWidth - size - 8)
-    const y = Math.min(Math.max(event.clientY - floatingDragRef.current.offsetY, 8), window.innerHeight - size - 8)
+    const x = Math.min(Math.max(event.clientX - drag.offsetX, 8), window.innerWidth - size - 8)
+    const y = Math.min(Math.max(event.clientY - drag.offsetY, 8), window.innerHeight - size - 8)
     setFloatingButtonPosition({ x, y })
   }
 
-  const handleFloatingPointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
+  const finishFloatingPointer = (event: React.PointerEvent<HTMLButtonElement>) => {
     floatingDragRef.current.active = false
-    event.currentTarget.releasePointerCapture(event.pointerId)
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
   }
 
   if (!decodedPdfUrl) return null
@@ -374,11 +382,12 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
         <Button
           size="icon"
           variant="ghost"
-          className={`fixed z-40 size-11 cursor-grab rounded-full border ${isOrange ? 'border-orange-400/40 bg-orange-950/45' : 'border-slate-500/40 bg-slate-900/45'} text-white/75 shadow-lg backdrop-blur-sm transition-colors hover:bg-slate-800/75 hover:text-white active:cursor-grabbing`}
+          className={`fixed z-40 size-11 touch-none cursor-grab rounded-full border ${isOrange ? 'border-orange-400/40 bg-orange-950/45' : 'border-slate-500/40 bg-slate-900/45'} text-white/75 shadow-lg backdrop-blur-sm transition-colors hover:bg-slate-800/75 hover:text-white active:cursor-grabbing`}
           style={{ left: floatingButtonPosition.x, top: floatingButtonPosition.y }}
           onPointerDown={handleFloatingPointerDown}
           onPointerMove={handleFloatingPointerMove}
-          onPointerUp={handleFloatingPointerUp}
+          onPointerUp={finishFloatingPointer}
+          onPointerCancel={finishFloatingPointer}
           onClick={() => {
             if (!floatingDragRef.current.moved) setToolbarVisible(true)
           }}
