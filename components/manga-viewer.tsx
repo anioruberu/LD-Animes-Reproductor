@@ -465,7 +465,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
               <div className="flex flex-col gap-5 py-2">
                 <div className="flex items-center justify-between gap-4">
                   <div><p className="font-medium">Botón flotante</p><p className="text-sm text-muted-foreground">Permite volver a mostrar el menú oculto.</p></div>
-                  <Switch checked={floatingButtonEnabled} onCheckedChange={(enabled) => { setFloatingButtonEnabled(enabled); setToolbarVisible(enabled) }} className={isOrange ? 'data-[state=checked]:bg-orange-500' : undefined} aria-label="Mostrar botón flotante" />
+                  <Switch checked={floatingButtonEnabled} onCheckedChange={setFloatingButtonEnabled} className={isOrange ? 'data-[state=checked]:bg-orange-500 data-[state=unchecked]:bg-orange-950/60' : undefined} aria-label="Mostrar botón flotante" />
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <div><p className="font-medium">Menú flotante fijo</p><p className="text-sm text-muted-foreground">En modo normal, mantiene el menú fijo en la primera página mientras haces scroll.</p></div>
@@ -492,7 +492,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
               </div>
             </DialogContent>
           </Dialog>
-          <Button size="icon" variant="ghost" disabled={!floatingButtonEnabled} onClick={() => setToolbarVisible((visible) => !visible)} title={floatingButtonEnabled ? 'Ocultar controles' : 'Activa el botón flotante para ocultar los controles'} aria-label={floatingButtonEnabled ? 'Ocultar controles' : 'Ocultar controles no disponible sin botón flotante'}><PanelLeftClose className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" onClick={() => setToolbarVisible((visible) => !visible)} title="Ocultar controles" aria-label="Ocultar controles"><PanelLeftClose className="h-4 w-4" /></Button>
         </div>
       </div>}
       {!toolbarVisible && settingsHydrated && floatingButtonEnabled && (
