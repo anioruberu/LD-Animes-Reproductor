@@ -304,11 +304,6 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   }, [readingMode, floatingButtonFixed, totalPages])
 
   useEffect(() => {
-    // Sin botón flotante, el menú no puede quedar oculto sin una forma de recuperarlo.
-    if (!floatingButtonEnabled) setToolbarVisible(true)
-  }, [floatingButtonEnabled])
-
-  useEffect(() => {
     if (decodedPdfUrl && totalPages > 0) saveMangaProgress(decodedPdfUrl, currentPage)
   }, [decodedPdfUrl, currentPage, totalPages])
 
@@ -470,11 +465,11 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
               <div className="flex flex-col gap-5 py-2">
                 <div className="flex items-center justify-between gap-4">
                   <div><p className="font-medium">Botón flotante</p><p className="text-sm text-muted-foreground">Permite volver a mostrar el menú oculto.</p></div>
-                  <Switch checked={floatingButtonEnabled} onCheckedChange={setFloatingButtonEnabled} aria-label="Mostrar botón flotante" />
+                  <Switch checked={floatingButtonEnabled} onCheckedChange={(enabled) => { setFloatingButtonEnabled(enabled); setToolbarVisible(enabled) }} className={isOrange ? 'data-[state=checked]:bg-orange-500' : undefined} aria-label="Mostrar botón flotante" />
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <div><p className="font-medium">Menú flotante fijo</p><p className="text-sm text-muted-foreground">En modo normal, mantiene el menú fijo en la primera página mientras haces scroll.</p></div>
-                  <Switch checked={floatingButtonFixed} onCheckedChange={setFloatingButtonFixed} aria-label="Fijar menú flotante" />
+                  <Switch checked={floatingButtonFixed} onCheckedChange={setFloatingButtonFixed} className={isOrange ? 'data-[state=checked]:bg-orange-500' : undefined} aria-label="Fijar menú flotante" />
                 </div>
                 <div className="flex flex-col gap-2">
                   <p className="font-medium">Posición del menú flotante</p>
