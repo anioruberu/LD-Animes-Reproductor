@@ -24,7 +24,7 @@ interface MangaViewerProps {
 export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar' }: MangaViewerProps) {
   const isOrange = theme === 'orange'
   const activeColor = isOrange ? 'bg-orange-500 hover:bg-orange-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
-  const settingsActiveColor = isOrange ? 'data-[state=on]:bg-orange-500 data-[state=on]:text-white data-[state=on]:hover:bg-orange-600' : 'data-[state=on]:bg-blue-600 data-[state=on]:text-white data-[state=on]:hover:bg-blue-700'
+  const settingsActiveColor = 'data-[state=on]:bg-blue-600 data-[state=on]:text-white data-[state=on]:hover:bg-blue-700'
   const neutralControl = '!bg-transparent !text-white hover:!bg-white/20 focus:!bg-transparent focus-visible:!bg-transparent active:!bg-transparent focus-visible:outline-none focus-visible:ring-0'
   const decodedPdfUrl = decodeVideoUrlParam(pdfUrl) || pdfUrl
   const [currentPage, setCurrentPage] = useState(1)
@@ -33,7 +33,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   const [toolbarVisible, setToolbarVisible] = useState(true)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [floatingButtonEnabled, setFloatingButtonEnabled] = useState(true)
-  const [floatingButtonFixed, setFloatingButtonFixed] = useState(false)
+  const [floatingButtonFixed, setFloatingButtonFixed] = useState(true)
   const [floatingButtonPosition, setFloatingButtonPosition] = useState({ x: 16, y: 50 })
   const [floatingButtonPlacement, setFloatingButtonPlacement] = useState<'left' | 'right' | 'top' | 'bottom'>('left')
   const [viewerBackground, setViewerBackground] = useState<'black' | 'white'>('black')
@@ -298,6 +298,11 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   }, [readingMode, floatingButtonFixed, totalPages])
 
   useEffect(() => {
+    // Sin botón flotante, el menú no puede quedar oculto sin una forma de recuperarlo.
+    if (!floatingButtonEnabled) setToolbarVisible(true)
+  }, [floatingButtonEnabled])
+
+  useEffect(() => {
     if (decodedPdfUrl && totalPages > 0) saveMangaProgress(decodedPdfUrl, currentPage)
   }, [decodedPdfUrl, currentPage, totalPages])
 
@@ -486,7 +491,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
               </div>
             </DialogContent>
           </Dialog>
-          <Button size="icon" variant="ghost" onClick={() => setToolbarVisible((visible) => !visible)} title="Ocultar controles" aria-label="Ocultar controles"><PanelLeftClose className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" disabled={!floatingButtonEnabled} onClick={() => setToolbarVisible((visible) => !visible)} title={floatingButtonEnabled ? 'Ocultar controles' : 'Activa el botón flotante para ocultar los controles'} aria-label={floatingButtonEnabled ? 'Ocultar controles' : 'Ocultar controles no disponible sin botón flotante'}><PanelLeftClose className="h-4 w-4" /></Button>
         </div>
       </div>}
       {!toolbarVisible && settingsHydrated && floatingButtonEnabled && (
