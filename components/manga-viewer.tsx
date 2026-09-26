@@ -394,6 +394,16 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
 
   const backgroundClass = viewerBackground === 'white' ? 'bg-white' : 'bg-slate-950'
   const floatingPlacementClass = floatingButtonPlacement === 'right' ? 'right-4 left-auto' : floatingButtonPlacement === 'top' ? 'top-4 left-1/2 -translate-x-1/2' : floatingButtonPlacement === 'bottom' ? 'bottom-4 top-auto left-1/2 -translate-x-1/2' : ''
+  const toolbarPlacementClass = floatingButtonPlacement === 'right'
+    ? 'right-4 left-auto'
+    : floatingButtonPlacement === 'top'
+      ? 'inset-x-0 top-4 bottom-auto justify-center'
+      : floatingButtonPlacement === 'bottom'
+        ? 'inset-x-0 top-auto bottom-4 justify-center'
+        : 'left-0 sm:left-4'
+  const toolbarLayoutClass = floatingButtonPlacement === 'left' || floatingButtonPlacement === 'right'
+    ? 'flex-col'
+    : 'flex-row'
 
   if (!decodedPdfUrl) return null
 
@@ -422,8 +432,8 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           <div className={`h-full rounded-full ${isOrange ? 'bg-orange-500' : 'bg-blue-500'} transition-[width] duration-200` } style={{ width: `${progress}%` }} />
         </div>
       </div>
-      {toolbarVisible && <div className="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center sm:left-4" style={{ transform: `translateY(${-toolbarScrollOffset}px)` }}>
-        <div className={`pointer-events-auto flex origin-left scale-[0.82] flex-col items-center gap-1 rounded-2xl border ${isOrange ? 'border-orange-500/50 bg-orange-950/90' : 'border-slate-700/80 bg-slate-900/90'} p-1.5 shadow-2xl backdrop-blur-md sm:gap-2 sm:p-2`}>
+      {toolbarVisible && <div className={`pointer-events-none absolute inset-y-0 z-10 flex items-center ${toolbarPlacementClass}`} style={{ transform: floatingButtonFixed ? undefined : `translateY(${-toolbarScrollOffset}px)` }}>
+        <div className={`pointer-events-auto flex ${toolbarLayoutClass} origin-left scale-[0.82] items-center gap-1 rounded-2xl border ${isOrange ? 'border-orange-500/50 bg-orange-950/90' : 'border-slate-700/80 bg-slate-900/90'} p-1.5 shadow-2xl backdrop-blur-md sm:gap-2 sm:p-2`}>
           {readingMode === 'manga' && (
             <>
               <Button size="icon" variant="ghost" onClick={handlePrevPage} disabled={currentPage === 1 || !pdf} title="Página anterior" aria-label="Página anterior"><ChevronRight className="h-4 w-4" /></Button>
