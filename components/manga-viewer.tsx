@@ -21,6 +21,7 @@ interface MangaViewerProps {
 export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar' }: MangaViewerProps) {
   const isOrange = theme === 'orange'
   const activeColor = isOrange ? 'bg-orange-500 hover:bg-orange-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
+  const neutralControl = '!bg-transparent !text-white hover:!bg-white/20 focus:!bg-transparent focus-visible:!bg-transparent active:!bg-transparent focus-visible:outline-none focus-visible:ring-0'
   const decodedPdfUrl = decodeVideoUrlParam(pdfUrl) || pdfUrl
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
@@ -338,10 +339,10 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           <div className="my-1 h-px w-6 bg-slate-700" />
           <Button size="icon" variant="ghost" className={readingMode === 'manga' ? activeColor : ''} onClick={() => switchReadingMode('manga')} title="Lectura manga" aria-label="Lectura manga"><BookOpen className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" className={readingMode === 'normal' ? activeColor : ''} onClick={() => switchReadingMode('normal')} title="Lectura normal de arriba hacia abajo" aria-label="Lectura normal de arriba hacia abajo"><Rows3 className="h-4 w-4" /></Button>
-          {readingMode === 'normal' && <Button size="icon" variant="ghost" className={isAutoScrolling ? activeColor : ''} onClick={toggleAutoScroll} title={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'} aria-label={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'}>{isAutoScrolling ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}</Button>}
+          {readingMode === 'normal' && <Button size="icon" variant="ghost" className={isAutoScrolling ? activeColor : neutralControl} onClick={toggleAutoScroll} title={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'} aria-label={isAutoScrolling ? 'Pausar lectura automática' : 'Reproducir lectura automática'}>{isAutoScrolling ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}</Button>}
           <div className="my-1 h-px w-6 bg-slate-700" />
           <Button size="icon" variant="ghost" className={activeColor} onClick={handleDownload} title="Descargar PDF" aria-label="Descargar PDF"><Download className="h-4 w-4" /></Button>
-          <Button size="icon" variant="ghost" className={isFullscreen ? activeColor : ''} onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" className={isFullscreen ? activeColor : neutralControl} onClick={handleFullscreen} title="Pantalla completa" aria-label="Pantalla completa"><Maximize className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" onClick={() => setToolbarVisible((visible) => !visible)} title={toolbarVisible ? 'Ocultar controles' : 'Mostrar controles'} aria-label={toolbarVisible ? 'Ocultar controles' : 'Mostrar controles'}>
             {toolbarVisible ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
           </Button>
