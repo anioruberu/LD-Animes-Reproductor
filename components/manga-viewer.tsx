@@ -24,6 +24,7 @@ interface MangaViewerProps {
 export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar' }: MangaViewerProps) {
   const isOrange = theme === 'orange'
   const activeColor = isOrange ? 'bg-orange-500 hover:bg-orange-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
+  const settingsActiveColor = isOrange ? 'data-[state=on]:bg-orange-500 data-[state=on]:text-white data-[state=on]:hover:bg-orange-600' : 'data-[state=on]:bg-blue-600 data-[state=on]:text-white data-[state=on]:hover:bg-blue-700'
   const neutralControl = '!bg-transparent !text-white hover:!bg-white/20 focus:!bg-transparent focus-visible:!bg-transparent active:!bg-transparent focus-visible:outline-none focus-visible:ring-0'
   const decodedPdfUrl = decodeVideoUrlParam(pdfUrl) || pdfUrl
   const [currentPage, setCurrentPage] = useState(1)
@@ -37,6 +38,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   const [floatingButtonPlacement, setFloatingButtonPlacement] = useState<'left' | 'right' | 'top' | 'bottom'>('left')
   const [viewerBackground, setViewerBackground] = useState<'black' | 'white'>('black')
   const [settingsHydrated, setSettingsHydrated] = useState(false)
+  const [toolbarScrollOffset, setToolbarScrollOffset] = useState(0)
   const floatingDragRef = useRef({ active: false, moved: false, offsetX: 0, offsetY: 0 })
   const [isAutoScrolling, setIsAutoScrolling] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -283,6 +285,19 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   }
 
   useEffect(() => {
+    const container = documentScrollRef.current
+    if (!container || readingMode !== 'normal' || floatingButtonFixed) {
+      setToolbarScrollOffset(0)
+      return
+    }
+
+    const updateToolbarOffset = () => setToolbarScrollOffset(container.scrollTop)
+    updateToolbarOffset()
+    container.addEventListener('scroll', updateToolbarOffset, { passive: true })
+    return () => container.removeEventListener('scroll', updateToolbarOffset)
+  }, [readingMode, floatingButtonFixed, totalPages])
+
+  useEffect(() => {
     if (decodedPdfUrl && totalPages > 0) saveMangaProgress(decodedPdfUrl, currentPage)
   }, [decodedPdfUrl, currentPage, totalPages])
 
@@ -407,7 +422,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           <div className={`h-full rounded-full ${isOrange ? 'bg-orange-500' : 'bg-blue-500'} transition-[width] duration-200` } style={{ width: `${progress}%` }} />
         </div>
       </div>
-      {toolbarVisible && <div className="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center sm:left-4">
+      {toolbarVisible && <div className="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center sm:left-4" style={{ transform: `translateY(${-toolbarScrollOffset}px)` }}>
         <div className={`pointer-events-auto flex origin-left scale-[0.82] flex-col items-center gap-1 rounded-2xl border ${isOrange ? 'border-orange-500/50 bg-orange-950/90' : 'border-slate-700/80 bg-slate-900/90'} p-1.5 shadow-2xl backdrop-blur-md sm:gap-2 sm:p-2`}>
           {readingMode === 'manga' && (
             <>
@@ -437,23 +452,25 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
                   <Switch checked={floatingButtonEnabled} onCheckedChange={setFloatingButtonEnabled} aria-label="Mostrar botón flotante" />
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <div><p className="font-medium">Menú flotante fijo</p><p className="text-sm text-muted-foreground">Evita que el botón se mueva al arrastrarlo.</p></div>
+                  <div><p className="font-medium">Menú flotante fijo</p><p className="text-sm text-muted-foreground">En modo normal, mantiene el menú fijo en la primera página mientras haces scroll.</p></div>
                   <Switch checked={floatingButtonFixed} onCheckedChange={setFloatingButtonFixed} aria-label="Fijar menú flotante" />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <p className="font-medium">Posición del botón</p>
+                  <p className="font-medium">Posición del menú flotante</p>
+                  <p className="text-sm text-muted-foreground">Elige dónde aparecerá el menú flotante en la pantalla.</p>
                   <ToggleGroup type="single" value={floatingButtonPlacement} onValueChange={(value) => value && setFloatingButtonPlacement(value as typeof floatingButtonPlacement)} className="grid grid-cols-4">
-                    <ToggleGroupItem value="left" aria-label="Izquierda">Izquierda</ToggleGroupItem>
-                    <ToggleGroupItem value="right" aria-label="Derecha">Derecha</ToggleGroupItem>
-                    <ToggleGroupItem value="top" aria-label="Arriba">Arriba</ToggleGroupItem>
-                    <ToggleGroupItem value="bottom" aria-label="Abajo">Abajo</ToggleGroupItem>
+                    <ToggleGroupItem className={settingsActiveColor} value="left" aria-label="Izquierda">Izquierda</ToggleGroupItem>
+                    <ToggleGroupItem className={settingsActiveColor} value="right" aria-label="Derecha">Derecha</ToggleGroupItem>
+                    <ToggleGroupItem className={settingsActiveColor} value="top" aria-label="Arriba">Arriba</ToggleGroupItem>
+                    <ToggleGroupItem className={settingsActiveColor} value="bottom" aria-label="Abajo">Abajo</ToggleGroupItem>
                   </ToggleGroup>
                 </div>
                 <div className="flex flex-col gap-2">
                   <p className="font-medium">Fondo del visor</p>
+                  <p className="text-sm text-muted-foreground">Cambia el fondo de la página web del visor entre negro y blanco.</p>
                   <ToggleGroup type="single" value={viewerBackground} onValueChange={(value) => value && setViewerBackground(value as typeof viewerBackground)} className="grid grid-cols-2">
-                    <ToggleGroupItem value="black" aria-label="Fondo negro">Negro</ToggleGroupItem>
-                    <ToggleGroupItem value="white" aria-label="Fondo blanco">Blanco</ToggleGroupItem>
+                    <ToggleGroupItem className={settingsActiveColor} value="black" aria-label="Fondo negro">Negro</ToggleGroupItem>
+                    <ToggleGroupItem className={settingsActiveColor} value="white" aria-label="Fondo blanco">Blanco</ToggleGroupItem>
                   </ToggleGroup>
                 </div>
               </div>
