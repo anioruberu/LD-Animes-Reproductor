@@ -24,7 +24,9 @@ interface MangaViewerProps {
 export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar' }: MangaViewerProps) {
   const isOrange = theme === 'orange'
   const activeColor = isOrange ? 'bg-orange-500 hover:bg-orange-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
-  const settingsActiveColor = 'data-[state=on]:bg-blue-600 data-[state=on]:text-white data-[state=on]:hover:bg-blue-700'
+  const settingsActiveColor = isOrange
+    ? 'data-[state=on]:bg-orange-500 data-[state=on]:text-white data-[state=on]:hover:bg-orange-600'
+    : 'data-[state=on]:bg-blue-600 data-[state=on]:text-white data-[state=on]:hover:bg-blue-700'
   const neutralControl = '!bg-transparent !text-white hover:!bg-white/20 focus:!bg-transparent focus-visible:!bg-transparent active:!bg-transparent focus-visible:outline-none focus-visible:ring-0'
   const decodedPdfUrl = decodeVideoUrlParam(pdfUrl) || pdfUrl
   const [currentPage, setCurrentPage] = useState(1)
@@ -65,7 +67,11 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           floatingButtonPlacement?: 'left' | 'right' | 'top' | 'bottom'
           viewerBackground?: 'black' | 'white'
         }
-        if (typeof parsed.floatingButtonEnabled === 'boolean') setFloatingButtonEnabled(parsed.floatingButtonEnabled)
+        if (typeof parsed.floatingButtonEnabled === 'boolean') {
+          setFloatingButtonEnabled(parsed.floatingButtonEnabled)
+          // Desactivar el botón flotante nunca debe persistir el menú oculto.
+          if (!parsed.floatingButtonEnabled) setToolbarVisible(true)
+        }
         if (typeof parsed.floatingButtonFixed === 'boolean') setFloatingButtonFixed(parsed.floatingButtonFixed)
         if (parsed.floatingButtonPosition && typeof parsed.floatingButtonPosition.x === 'number' && typeof parsed.floatingButtonPosition.y === 'number') {
           setFloatingButtonPosition({ x: parsed.floatingButtonPosition.x, y: parsed.floatingButtonPosition.y })
