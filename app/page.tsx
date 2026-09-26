@@ -84,7 +84,7 @@ export default function HomePage() {
     }
     saveMangaToLibrary(value)
     const mangaUrl = encodeUrl ? encodeVideoUrl(value) : value
-    router.push(`/${selectedPlayer === "orange" ? "v2" : "v"}?url=${encodeURIComponent(mangaUrl)}`)
+    router.push(`/${selectedPlayer === "orange" ? "visor2" : "visor"}?url=${encodeURIComponent(mangaUrl)}`)
   }
 
   const handleGoToPlayer = (playerType: 'blue' | 'orange' = 'blue') => {
@@ -170,7 +170,7 @@ export default function HomePage() {
         {contentMode === "pdf" && (
           <>
             <MangaLibrary
-              onOpen={(item) => router.push(`/${selectedPlayer === "orange" ? "v2" : "v"}?url=${encodeURIComponent(item.url)}`)}
+              onOpen={(item) => router.push(`/${selectedPlayer === "orange" ? "visor2" : "visor"}?url=${encodeURIComponent(item.url)}`)}
               onEdit={(item) => { setUrl(item.url); setSelectedPlayer("blue") }}
             />
             <form onSubmit={handleOpenPdf} className="mt-6 space-y-4">
@@ -297,7 +297,7 @@ export default function HomePage() {
 
             {/* Opciones de compartir */}
             <div className="space-y-3">
-              {/* Opción 1: URL Directa */}
+              {/* Opci��n 1: URL Directa */}
               <div className="bg-slate-800/50 rounded-lg border border-slate-700 p-4">
                 <h3 className="text-sm font-semibold text-white mb-3">URL Directa</h3>
                 <div className="flex flex-col sm:flex-row gap-2">
