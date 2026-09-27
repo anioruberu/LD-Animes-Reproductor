@@ -59,9 +59,10 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
   const highResolutionPdfRef = useRef(false)
   const renderedPagesRef = useRef(new WeakMap<object, Set<number>>())
   const renderingPagesRef = useRef(new WeakMap<object, Set<number>>())
+  const adScriptsLoadedRef = useRef(false)
 
   useEffect(() => {
-    if (!adsEnabled || loading) return
+    if (!adsEnabled || loading || adScriptsLoadedRef.current) return
 
     const adContainers = Array.from(document.querySelectorAll<HTMLElement>('[data-manga-ad]'))
     const scripts = adContainers.map((container) => {
@@ -69,13 +70,13 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
       ;(script as HTMLScriptElement & { settings?: Record<string, never> }).settings = {}
       script.src = container.dataset.mangaAdPosition === 'bottom' ? BOTTOM_AD_SCRIPT_SOURCE : TOP_AD_SCRIPT_SOURCE
       script.async = true
-      script.fetchPriority = 'high'
       script.referrerPolicy = 'no-referrer-when-downgrade'
       container.appendChild(script)
       return script
     })
+    adScriptsLoadedRef.current = scripts.length > 0
 
-    return () => scripts.forEach((script) => script.remove())
+    return () => {}
   }, [adsEnabled, loading])
 
   useEffect(() => {
