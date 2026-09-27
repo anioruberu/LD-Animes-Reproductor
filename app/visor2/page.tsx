@@ -22,7 +22,7 @@ export default async function GokuPlayViewerPage({ searchParams }: PageProps) {
 
   return (
     <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-orange-400">Cargando...</div>}>
-      <MangaViewer pdfUrl={pdfUrl} theme="orange" downloadPath="/descargar2" />
+      <MangaViewer pdfUrl={pdfUrl} theme="orange" downloadPath="/descargar2" adsEnabled />
     </Suspense>
   )
 }
