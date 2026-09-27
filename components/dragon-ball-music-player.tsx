@@ -20,16 +20,17 @@ export function DragonBallMusicPlayer({ initialPlaylist, accent, autoStart = tru
   const track = playlist.tracks[trackIndex] as MusicTrack
   const color = accent === 'orange' ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-600 hover:bg-blue-700'
 
-  useEffect(() => { setTrackIndex(0); setPlaying(autoStart) }, [playlistId, autoStart])
   useEffect(() => {
-    if (!playing) return
-    void audioRef.current?.play().catch(() => setPlaying(false))
-  }, [track.url, playing])
+    setTrackIndex(0)
+    setPlaying(false)
+  }, [playlistId])
+
   useEffect(() => {
-    if (!autoStart) return
     const audio = audioRef.current
     if (!audio) return
     audio.volume = 0.45
+    audio.load()
+    if (!autoStart) return
 
     const tryStart = () => {
       void audio.play().then(() => setPlaying(true)).catch(() => setPlaying(false))
@@ -43,6 +44,12 @@ export function DragonBallMusicPlayer({ initialPlaylist, accent, autoStart = tru
       window.removeEventListener('keydown', tryStart)
     }
   }, [autoStart, track.url])
+
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio || !playing) return
+    void audio.play().catch(() => setPlaying(false))
+  }, [playing, track.url])
   useEffect(() => { if (!notice) return; const timer = window.setTimeout(() => setNotice(''), 3200); return () => window.clearTimeout(timer) }, [notice])
   const changeTrack = (next: number) => { setTrackIndex((current) => (current + next + playlist.tracks.length) % playlist.tracks.length); setPlaying(true); setNotice('Cambiando música') }
   const toggle = () => { const audio = audioRef.current; if (!audio) return; if (playing) { audio.pause(); setPlaying(false) } else { void audio.play().then(() => setPlaying(true)).catch(() => setPlaying(false)) } }
