@@ -438,6 +438,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
       ref={viewerRef}
       className={`relative min-h-screen overflow-hidden ${backgroundClass} touch-auto`}
     >
+      {dragonBallSaga && <div className="sr-only" aria-hidden="true"><DragonBallMusicPlayer initialPlaylist={dragonBallSaga} accent={theme === 'orange' ? 'orange' : 'blue'} autoStart showControls={false} /></div>}
       <div className="pointer-events-none fixed inset-x-0 top-0 z-30 px-3 pt-2 sm:px-5 sm:pt-3">
         <div className="mx-auto h-1.5 w-full max-w-3xl overflow-hidden rounded-full bg-slate-800/90 shadow-lg ring-1 ring-slate-700/70" role="progressbar" aria-label="Progreso de lectura" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
           <div className={`h-full rounded-full ${isOrange ? 'bg-orange-500' : 'bg-blue-500'} transition-[width] duration-200` } style={{ width: `${progress}%` }} />

@@ -7,9 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { DRAGON_BALL_PLAYLISTS, getTrackTitle, type MusicTrack } from '@/lib/dragon-ball-music'
 
-type Props = { initialPlaylist: 'dragon-ball' | 'dragon-ball-z'; accent: 'blue' | 'orange' }
+type Props = { initialPlaylist: 'dragon-ball' | 'dragon-ball-z'; accent: 'blue' | 'orange'; autoStart?: boolean; showControls?: boolean }
 
-export function DragonBallMusicPlayer({ initialPlaylist, accent }: Props) {
+export function DragonBallMusicPlayer({ initialPlaylist, accent, autoStart = false, showControls = true }: Props) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [playlistId, setPlaylistId] = useState(initialPlaylist)
   const [trackIndex, setTrackIndex] = useState(0)
@@ -20,11 +20,28 @@ export function DragonBallMusicPlayer({ initialPlaylist, accent }: Props) {
   const track = playlist.tracks[trackIndex] as MusicTrack
   const color = accent === 'orange' ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-600 hover:bg-blue-700'
 
-  useEffect(() => { setTrackIndex(0); setPlaying(false) }, [playlistId])
-  useEffect(() => { if (playing) void audioRef.current?.play().catch(() => setPlaying(false)) }, [track.url, playing])
+  useEffect(() => { setTrackIndex(0); setPlaying(autoStart) }, [playlistId, autoStart])
+  useEffect(() => {
+    if (!playing) return
+    void audioRef.current?.play().catch(() => setPlaying(false))
+  }, [track.url, playing])
+  useEffect(() => {
+    if (!autoStart) return
+    const audio = audioRef.current
+    if (!audio) return
+    audio.volume = 0.45
+    void audio.play().catch(() => {
+      // Los navegadores pueden bloquear autoplay hasta la primera interacción del usuario.
+      setPlaying(false)
+    })
+  }, [autoStart, track.url])
   useEffect(() => { if (!notice) return; const timer = window.setTimeout(() => setNotice(''), 3200); return () => window.clearTimeout(timer) }, [notice])
   const changeTrack = (next: number) => { setTrackIndex((current) => (current + next + playlist.tracks.length) % playlist.tracks.length); setPlaying(true); setNotice('Cambiando música') }
   const toggle = () => { const audio = audioRef.current; if (!audio) return; if (playing) { audio.pause(); setPlaying(false) } else { void audio.play().then(() => setPlaying(true)).catch(() => setPlaying(false)) } }
+
+  if (!showControls) {
+    return <audio ref={audioRef} src={track.url} autoPlay={autoStart} loop={repeat} onEnded={() => { if (!repeat) changeTrack(1) }} preload="auto" aria-label="Música de fondo" />
+  }
 
   return <div className="rounded-xl border border-border/70 bg-muted/40 p-3 shadow-sm">
     <div className="mb-3 flex items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Música de fondo</p><p className="mt-1 font-medium">{getTrackTitle(track)}</p></div><Volume2 className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" /></div>
