@@ -22,7 +22,8 @@ interface MangaViewerProps {
   adsEnabled?: boolean
 }
 
-const AD_SCRIPT_SOURCE = '//fond-appointment.com/buX/V.sAd/GylX0nYkWtc_/DeBmI9Fu_ZcUOl/knP/TwcU0RNjjHQow/OcDnk/tZN-zTQh2ON/D/Ar5xM/wf'
+const TOP_AD_SCRIPT_SOURCE = '//fond-appointment.com/buX/V.sAd/GylX0nYkWtc_/DeBmI9Fu_ZcUOl/knP/TwcU0RNjjHQow/OcDnk/tZN-zTQh2ON/D/Ar5xM/wf'
+const BOTTOM_AD_SCRIPT_SOURCE = '//fond-appointment.com/bwXAV.s_dfGRlk0YY/WMca/ReTmy9PuZZ/UblCkgPQTxcp0/NGj/Q/xWN-DKUVt/NpzPQn2CNnDHEE0cOxQc'
 
 export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar', adsEnabled = false }: MangaViewerProps) {
   const isOrange = theme === 'orange'
@@ -66,7 +67,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
     const scripts = adContainers.map((container) => {
       const script = document.createElement('script')
       ;(script as HTMLScriptElement & { settings?: Record<string, never> }).settings = {}
-      script.src = AD_SCRIPT_SOURCE
+      script.src = container.dataset.mangaAdPosition === 'bottom' ? BOTTOM_AD_SCRIPT_SOURCE : TOP_AD_SCRIPT_SOURCE
       script.async = true
       script.referrerPolicy = 'no-referrer-when-downgrade'
       container.appendChild(script)
@@ -558,7 +559,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
             </div>
             {adsEnabled && (
               <div className="flex min-h-16 w-full shrink-0 items-center justify-center border-t border-slate-800/80 bg-slate-950 px-2 py-1 sm:min-h-20" aria-label="Publicidad inferior">
-                <div data-manga-ad className="h-14 w-full max-w-[728px] overflow-hidden text-center sm:h-16" />
+                <div data-manga-ad data-manga-ad-position="bottom" className="h-14 w-full max-w-[728px] overflow-hidden text-center sm:h-16" />
               </div>
             )}
           </div>
