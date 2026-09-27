@@ -28,16 +28,11 @@ function BannerSlot({ label }: { label: string }) {
   )
 }
 
-export function ViewerBannerAds() {
+export function ViewerBannerAds({ position }: { position: 'top' | 'bottom' }) {
   return (
-    <>
-      <div className="pointer-events-auto absolute inset-x-0 top-8 z-[5] h-14 px-2 sm:h-16 sm:px-4">
-        <BannerSlot label="Publicidad superior" />
-      </div>
-      <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-[5] h-14 px-2 sm:h-16 sm:px-4">
-        <BannerSlot label="Publicidad inferior" />
-      </div>
-    </>
+    <div className="pointer-events-auto flex h-14 w-full shrink-0 items-center justify-center px-2 sm:h-16 sm:px-4">
+      <BannerSlot label={position === 'top' ? 'Publicidad superior' : 'Publicidad inferior'} />
+    </div>
   )
 }
 

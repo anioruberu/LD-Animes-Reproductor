@@ -435,7 +435,6 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
       ref={viewerRef}
       className={`relative min-h-screen overflow-hidden ${backgroundClass} touch-auto`}
     >
-      {showBannerAds && <ViewerBannerAds />}
       <div className="pointer-events-none fixed inset-x-0 top-0 z-30 px-3 pt-2 sm:px-5 sm:pt-3">
         <div className="mx-auto h-1.5 w-full max-w-3xl overflow-hidden rounded-full bg-slate-800/90 shadow-lg ring-1 ring-slate-700/70" role="progressbar" aria-label="Progreso de lectura" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
           <div className={`h-full rounded-full ${isOrange ? 'bg-orange-500' : 'bg-blue-500'} transition-[width] duration-200` } style={{ width: `${progress}%` }} />
@@ -520,9 +519,10 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
       <div className="pointer-events-none fixed right-3 top-3 z-30 rounded-full border border-slate-600/80 bg-slate-900/90 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-md sm:right-5 sm:top-5 sm:px-4 sm:py-2 sm:text-sm">
         {currentPage} / {totalPages}
       </div>
-      <div ref={documentScrollRef} className={`h-screen w-full ${backgroundClass} ${readingMode === 'normal' ? 'overflow-y-auto pt-20' : 'flex items-center justify-center overflow-hidden'}`}>
+      <div ref={documentScrollRef} className={`h-screen w-full ${backgroundClass} ${readingMode === 'normal' ? 'overflow-y-auto pt-20' : 'overflow-y-auto'}`}>
+        {showBannerAds && <ViewerBannerAds position="top" />}
         {loading ? <div className="flex min-h-full w-full items-center justify-center text-gray-400">Cargando...</div> : (
-          <div className={readingMode === 'normal' ? 'mx-auto flex w-full max-w-4xl flex-col items-center gap-2 px-2 pb-8' : 'flex h-full w-full items-center justify-center'}>
+          <div className={readingMode === 'normal' ? 'mx-auto flex w-full max-w-4xl flex-col items-center gap-2 px-2 pb-8' : 'flex min-h-[calc(100vh-7rem)] w-full items-center justify-center'}>
             {(readingMode === 'normal' ? Array.from({ length: totalPages }, (_, index) => index + 1) : [currentPage]).map((pageNumber) => (
               <canvas
                 key={pageNumber}
@@ -533,6 +533,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
             ))}
           </div>
         )}
+        {showBannerAds && <div className="mt-auto"><ViewerBannerAds position="bottom" /></div>}
       </div>
     </div>
   )
