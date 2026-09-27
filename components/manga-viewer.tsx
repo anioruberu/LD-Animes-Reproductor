@@ -543,8 +543,8 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
         {loading ? <div className="flex min-h-full w-full items-center justify-center text-gray-400">Cargando...</div> : (
           <div className="flex min-h-full w-full flex-col">
             {adsEnabled && (
-              <div className="flex min-h-16 w-full shrink-0 items-center justify-center border-b border-slate-800/80 bg-slate-950 px-2 py-1 sm:min-h-20" aria-label="Publicidad superior">
-                <div data-manga-ad className="h-14 w-full max-w-[728px] overflow-hidden text-center sm:h-16" />
+              <div className="flex w-full shrink-0 items-start justify-center border-b border-slate-800/80 bg-slate-950 px-0" aria-label="Publicidad superior">
+                <div data-manga-ad className="aspect-[6/5] w-[min(300px,100vw)] overflow-hidden text-center" />
               </div>
             )}
             <div className={readingMode === 'normal' ? 'mx-auto flex w-full max-w-4xl flex-col items-center gap-2 px-2 pb-8' : 'flex h-full w-full items-center justify-center'}>
@@ -558,8 +558,8 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
               ))}
             </div>
             {adsEnabled && (
-              <div className="flex min-h-16 w-full shrink-0 items-center justify-center border-t border-slate-800/80 bg-slate-950 px-2 py-1 sm:min-h-20" aria-label="Publicidad inferior">
-                <div data-manga-ad data-manga-ad-position="bottom" className="h-14 w-full max-w-[728px] overflow-hidden text-center sm:h-16" />
+              <div className="flex w-full shrink-0 items-end justify-center border-t border-slate-800/80 bg-slate-950 px-0" aria-label="Publicidad inferior">
+                <div data-manga-ad data-manga-ad-position="bottom" className="aspect-[6/5] w-[min(300px,100vw)] overflow-hidden text-center" />
               </div>
             )}
           </div>
