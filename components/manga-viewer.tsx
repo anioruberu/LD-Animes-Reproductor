@@ -116,12 +116,27 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
 
         // Descargamos el archivo completo antes de entregarlo a PDF.js. Así no
         // dependemos de Range/redirects de servidores externos como Hugging Face.
-        const pdfProxyUrl = getHuggingFaceProxyUrl(decodedPdfUrl)
-        const fileName = decodeURIComponent(decodedPdfUrl.split('/').pop() ?? '').toLowerCase()
-        const hasJbig2Images = fileName.includes('blanco') || fileName.includes('negro')
+        const response = await fetch(getHuggingFaceProxyUrl(decodedPdfUrl), {
+          cache: 'no-store',
+        })
+        if (!response.ok) {
+          throw new Error(`PDF request failed: ${response.status}`)
+        }
+
+        const data = new Uint8Array(await response.arrayBuffer())
+        if (!data.length) {
+          throw new Error('The PDF response was empty')
+        }
+
+        const hasJbig2Images = (() => {
+          const marker = new Uint8Array([47, 74, 66, 73, 71, 50, 68, 101, 99, 111, 100, 101])
+          const hasMarker = data.some((_, index) => marker.every((byte, markerIndex) => data[index + markerIndex] === byte))
+          const fileName = decodeURIComponent(decodedPdfUrl.split('/').pop() ?? '').toLowerCase()
+          return hasMarker || fileName === '01.pdf'
+        })()
         highResolutionPdfRef.current = hasJbig2Images
         const compatibleOptions = {
-          url: pdfProxyUrl,
+          data,
           isOffscreenCanvasSupported: false,
           useWorkerFetch: false,
           useWasm: true,
@@ -130,7 +145,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
         }
 
         const loadWithFallback = async () => {
-          loadingTask = pdfjs.getDocument(hasJbig2Images ? compatibleOptions : { url: pdfProxyUrl })
+          loadingTask = pdfjs.getDocument(hasJbig2Images ? compatibleOptions : { data })
           try {
             return await loadingTask.promise
           } catch (initialError) {
