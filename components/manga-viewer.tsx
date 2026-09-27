@@ -12,6 +12,8 @@ import { getHuggingFaceProxyUrl } from '@/lib/huggingface'
 import { readMangaProgress, saveMangaProgress } from '@/lib/manga-library'
 import { decodeVideoUrlParam, encodeVideoUrl } from '@/lib/url-codec'
 import { ViewerBannerAds } from '@/components/visor-banner-ads'
+import { DragonBallMusicPlayer } from '@/components/dragon-ball-music-player'
+import { getDragonBallSaga } from '@/lib/dragon-ball-music'
 
 // pdfjs-dist 6 publica el worker como módulo ES; usar .mjs evita el error de fake worker.
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`
@@ -31,6 +33,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
     : 'data-[state=on]:bg-blue-600 data-[state=on]:text-white data-[state=on]:hover:bg-blue-700'
   const neutralControl = '!bg-transparent !text-white hover:!bg-white/20 focus:!bg-transparent focus-visible:!bg-transparent active:!bg-transparent focus-visible:outline-none focus-visible:ring-0'
   const decodedPdfUrl = decodeVideoUrlParam(pdfUrl) || pdfUrl
+  const dragonBallSaga = getDragonBallSaga(decodedPdfUrl)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
   const [readingMode, setReadingMode] = useState<'manga' | 'normal'>('manga')
@@ -483,9 +486,11 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
                     <ToggleGroupItem className={settingsActiveColor} value="bottom" aria-label="Abajo">Abajo</ToggleGroupItem>
                   </ToggleGroup>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <p className="font-medium">Fondo del visor</p>
-                  <p className="text-sm text-muted-foreground">Cambia el fondo de la página web del visor entre negro y blanco.</p>
+  {dragonBallSaga && <div className="flex flex-col gap-2 border-t pt-4"><div><p className="font-medium">Reproductor Dragon Ball</p><p className="text-sm text-muted-foreground">La playlist se selecciona automáticamente según el tomo. Puedes cambiarla cuando quieras.</p></div><DragonBallMusicPlayer initialPlaylist={dragonBallSaga} accent={theme === 'orange' ? 'orange' : 'blue'} /></div>}
+  <div className="flex flex-col gap-2">
+  <p className="font-medium">Fondo del visor</p>
+  <p className="text-sm text-muted-foreground">Cambia el fondo de la página web del visor entre negro y blanco.</p>
+
                   <ToggleGroup type="single" value={viewerBackground} onValueChange={(value) => value && setViewerBackground(value as typeof viewerBackground)} className="grid grid-cols-2">
                     <ToggleGroupItem className={settingsActiveColor} value="black" aria-label="Fondo negro">Negro</ToggleGroupItem>
                     <ToggleGroupItem className={settingsActiveColor} value="white" aria-label="Fondo blanco">Blanco</ToggleGroupItem>
