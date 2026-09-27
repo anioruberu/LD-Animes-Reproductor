@@ -32,7 +32,20 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
     ? 'data-[state=on]:bg-orange-500 data-[state=on]:text-white data-[state=on]:hover:bg-orange-600'
     : 'data-[state=on]:bg-blue-600 data-[state=on]:text-white data-[state=on]:hover:bg-blue-700'
   const neutralControl = '!bg-transparent !text-white hover:!bg-white/20 focus:!bg-transparent focus-visible:!bg-transparent active:!bg-transparent focus-visible:outline-none focus-visible:ring-0'
-  const decodedPdfUrl = decodeVideoUrlParam(pdfUrl) || pdfUrl
+  const decodedPdfUrl = (() => {
+    let value = decodeVideoUrlParam(pdfUrl) || pdfUrl
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      if (!value.includes('%')) break
+      try {
+        const decoded = decodeURIComponent(value)
+        if (decoded === value) break
+        value = decoded
+      } catch {
+        break
+      }
+    }
+    return value
+  })()
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
   const [readingMode, setReadingMode] = useState<'manga' | 'normal'>('manga')
