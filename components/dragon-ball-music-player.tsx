@@ -9,7 +9,7 @@ import { DRAGON_BALL_PLAYLISTS, getTrackTitle, type MusicTrack } from '@/lib/dra
 
 type Props = { initialPlaylist: 'dragon-ball' | 'dragon-ball-z'; accent: 'blue' | 'orange'; autoStart?: boolean; showControls?: boolean }
 
-export function DragonBallMusicPlayer({ initialPlaylist, accent, autoStart = false, showControls = true }: Props) {
+export function DragonBallMusicPlayer({ initialPlaylist, accent, autoStart = true, showControls = true }: Props) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [playlistId, setPlaylistId] = useState(initialPlaylist)
   const [trackIndex, setTrackIndex] = useState(0)
@@ -30,10 +30,18 @@ export function DragonBallMusicPlayer({ initialPlaylist, accent, autoStart = fal
     const audio = audioRef.current
     if (!audio) return
     audio.volume = 0.45
-    void audio.play().catch(() => {
-      // Los navegadores pueden bloquear autoplay hasta la primera interacción del usuario.
-      setPlaying(false)
-    })
+
+    const tryStart = () => {
+      void audio.play().then(() => setPlaying(true)).catch(() => setPlaying(false))
+    }
+
+    tryStart()
+    window.addEventListener('pointerdown', tryStart, { once: true, passive: true })
+    window.addEventListener('keydown', tryStart, { once: true })
+    return () => {
+      window.removeEventListener('pointerdown', tryStart)
+      window.removeEventListener('keydown', tryStart)
+    }
   }, [autoStart, track.url])
   useEffect(() => { if (!notice) return; const timer = window.setTimeout(() => setNotice(''), 3200); return () => window.clearTimeout(timer) }, [notice])
   const changeTrack = (next: number) => { setTrackIndex((current) => (current + next + playlist.tracks.length) % playlist.tracks.length); setPlaying(true); setNotice('Cambiando música') }
