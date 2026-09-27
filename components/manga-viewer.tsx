@@ -128,11 +128,13 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           throw new Error('The PDF response was empty')
         }
 
-        // Usamos la configuración compatible para todos los PDF, no solo los que
-        // parecen JBIG2 por el nombre. Algunos PDF en blanco y negro declaran
-        // sus imágenes de forma indirecta y fallan si PDF.js empieza en modo
-        // estándar; esta ruta conserva también el soporte para PDF normales.
-        highResolutionPdfRef.current = false
+        const hasJbig2Images = (() => {
+          const marker = new Uint8Array([47, 74, 66, 73, 71, 50, 68, 101, 99, 111, 100, 101])
+          const hasMarker = data.some((_, index) => marker.every((byte, markerIndex) => data[index + markerIndex] === byte))
+          const fileName = decodeURIComponent(decodedPdfUrl.split('/').pop() ?? '').toLowerCase()
+          return hasMarker || fileName === '01.pdf'
+        })()
+        highResolutionPdfRef.current = hasJbig2Images
         const compatibleOptions = {
           data,
           isOffscreenCanvasSupported: false,
@@ -142,8 +144,20 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           wasmUrl: '/pdfjs/',
         }
 
-        loadingTask = pdfjs.getDocument(compatibleOptions)
-        const loadedPdf = await loadingTask.promise
+        const loadWithFallback = async () => {
+          loadingTask = pdfjs.getDocument(hasJbig2Images ? compatibleOptions : { data })
+          try {
+            return await loadingTask.promise
+          } catch (initialError) {
+            if (cancelled) throw initialError
+            await loadingTask.destroy()
+            console.warn('[v0] PDF requiere compatibilidad JBIG2/WASM; reintentando carga compatible')
+            loadingTask = pdfjs.getDocument(compatibleOptions)
+            return await loadingTask.promise
+          }
+        }
+
+        const loadedPdf = await loadWithFallback()
         if (cancelled) return
 
         setPdf(loadedPdf)
