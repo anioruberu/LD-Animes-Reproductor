@@ -472,7 +472,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
                     <ToggleGroupItem className={settingsActiveColor} value="bottom" aria-label="Abajo">Abajo</ToggleGroupItem>
                   </ToggleGroup>
                 </div>
-  {dragonBallSaga && <div className="flex flex-col gap-2 border-t pt-4"><div><p className="font-medium">Reproductor Dragon Ball</p><p className="text-sm text-muted-foreground">La playlist se selecciona automáticamente según el tomo. Puedes cambiarla cuando quieras.</p></div><DragonBallMusicPlayer initialPlaylist={dragonBallSaga} accent={theme === 'orange' ? 'orange' : 'blue'} /></div>}
+  {dragonBallSaga && <div className="flex flex-col gap-2 border-t pt-4"><div><p className="font-medium">Reproductor Dragon Ball</p><p className="text-sm text-muted-foreground">La playlist se selecciona automáticamente según el tomo. Puedes cambiarla cuando quieras.</p></div><DragonBallMusicPlayer initialPlaylist={dragonBallSaga} accent={theme === 'orange' ? 'orange' : 'blue'} autoStart={false} /></div>}
   <div className="flex flex-col gap-2">
   <p className="font-medium">Fondo del visor</p>
   <p className="text-sm text-muted-foreground">Cambia el fondo de la página web del visor entre negro y blanco.</p>
