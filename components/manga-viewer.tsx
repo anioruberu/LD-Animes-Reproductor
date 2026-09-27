@@ -194,13 +194,10 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           const context = pageCanvas.getContext('2d', { alpha: true })
           if (!context) continue
 
-          const displayScale = Math.max(window.devicePixelRatio || 1, 1.5)
-          const renderScale = highResolutionPdfRef.current ? displayScale * 1.25 : displayScale
+          const renderScale = highResolutionPdfRef.current ? 1.5 : 1
           const viewport = page.getViewport({ scale: renderScale })
-          pageCanvas.width = Math.ceil(viewport.width)
-          pageCanvas.height = Math.ceil(viewport.height)
-          pageCanvas.style.width = `${viewport.width / displayScale}px`
-          pageCanvas.style.height = `${viewport.height / displayScale}px`
+          pageCanvas.width = viewport.width
+          pageCanvas.height = viewport.height
           context.save()
           context.globalCompositeOperation = 'source-over'
           context.fillStyle = '#ffffff'
@@ -427,7 +424,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
       ref={viewerRef}
       className={`relative min-h-screen overflow-hidden ${backgroundClass} touch-auto`}
     >
-      {dragonBallSaga && <div className={settingsOpen ? 'contents' : 'sr-only'} aria-hidden={!settingsOpen}><DragonBallMusicPlayer initialPlaylist={dragonBallSaga} accent={theme === 'orange' ? 'orange' : 'blue'} autoStart={totalPages > 0} showControls={settingsOpen} /></div>}
+      {dragonBallSaga && <div className="sr-only" aria-hidden="true"><DragonBallMusicPlayer initialPlaylist={dragonBallSaga} accent={theme === 'orange' ? 'orange' : 'blue'} autoStart={totalPages > 0} showControls={false} /></div>}
       <div className="pointer-events-none fixed inset-x-0 top-0 z-30 px-3 pt-2 sm:px-5 sm:pt-3">
         <div className="mx-auto h-1.5 w-full max-w-3xl overflow-hidden rounded-full bg-slate-800/90 shadow-lg ring-1 ring-slate-700/70" role="progressbar" aria-label="Progreso de lectura" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
           <div className={`h-full rounded-full ${isOrange ? 'bg-orange-500' : 'bg-blue-500'} transition-[width] duration-200` } style={{ width: `${progress}%` }} />
