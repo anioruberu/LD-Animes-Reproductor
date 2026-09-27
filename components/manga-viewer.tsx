@@ -74,7 +74,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
     })
 
     return () => scripts.forEach((script) => script.remove())
-  }, [adsEnabled])
+  }, [adsEnabled, loading])
 
   useEffect(() => {
     try {
