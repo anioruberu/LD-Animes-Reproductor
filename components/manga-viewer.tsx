@@ -114,29 +114,9 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
         setPdf(null)
         setTotalPages(0)
 
-        // Descargamos el archivo completo antes de entregarlo a PDF.js. Así no
-        // dependemos de Range/redirects de servidores externos como Hugging Face.
-        const response = await fetch(getHuggingFaceProxyUrl(decodedPdfUrl), {
-          cache: 'no-store',
-        })
-        if (!response.ok) {
-          throw new Error(`PDF request failed: ${response.status}`)
-        }
-
-        const data = new Uint8Array(await response.arrayBuffer())
-        if (!data.length) {
-          throw new Error('The PDF response was empty')
-        }
-
-        const hasJbig2Images = (() => {
-          const marker = new Uint8Array([47, 74, 66, 73, 71, 50, 68, 101, 99, 111, 100, 101])
-          const hasMarker = data.some((_, index) => marker.every((byte, markerIndex) => data[index + markerIndex] === byte))
-          const fileName = decodeURIComponent(decodedPdfUrl.split('/').pop() ?? '').toLowerCase()
-          return hasMarker || fileName === '01.pdf'
-        })()
-        highResolutionPdfRef.current = hasJbig2Images
+        const proxyUrl = getHuggingFaceProxyUrl(decodedPdfUrl)
+        const fileName = decodeURIComponent(decodedPdfUrl.split('/').pop() ?? '').toLowerCase()
         const compatibleOptions = {
-          data,
           isOffscreenCanvasSupported: false,
           useWorkerFetch: false,
           useWasm: true,
@@ -144,15 +124,25 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           wasmUrl: '/pdfjs/',
         }
 
+        // Primero dejamos que PDF.js use Range/streaming para que la primera
+        // página aparezca rápido. Solo descargamos el archivo completo si el
+        // servidor o un PDF especial necesita el camino compatible con JBIG2.
+        highResolutionPdfRef.current = fileName.includes('blanco') || fileName.includes('negro')
         const loadWithFallback = async () => {
-          loadingTask = pdfjs.getDocument(hasJbig2Images ? compatibleOptions : { data })
+          loadingTask = pdfjs.getDocument({ url: proxyUrl, ...compatibleOptions })
           try {
             return await loadingTask.promise
           } catch (initialError) {
             if (cancelled) throw initialError
             await loadingTask.destroy()
-            console.warn('[v0] PDF requiere compatibilidad JBIG2/WASM; reintentando carga compatible')
-            loadingTask = pdfjs.getDocument(compatibleOptions)
+            const response = await fetch(proxyUrl, { cache: 'no-store' })
+            if (!response.ok) throw new Error(`PDF request failed: ${response.status}`)
+            const data = new Uint8Array(await response.arrayBuffer())
+            if (!data.length) throw new Error('The PDF response was empty')
+            const marker = new Uint8Array([47, 74, 66, 73, 71, 50, 68, 101, 99, 111, 100, 101])
+            const hasJbig2Images = data.some((_, index) => marker.every((byte, markerIndex) => data[index + markerIndex] === byte))
+            highResolutionPdfRef.current = highResolutionPdfRef.current || hasJbig2Images
+            loadingTask = pdfjs.getDocument({ data, ...compatibleOptions })
             return await loadingTask.promise
           }
         }
