@@ -21,22 +21,7 @@ function isHuggingFaceTarget(value: string) {
 }
 
 export async function GET(request: NextRequest) {
-  const rawTargetValue = request.nextUrl.searchParams.get("url")
-  const targetValue = (() => {
-    if (!rawTargetValue) return null
-    let value = rawTargetValue
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-      if (!value.includes('%')) break
-      try {
-        const decoded = decodeURIComponent(value)
-        if (decoded === value) break
-        value = decoded
-      } catch {
-        break
-      }
-    }
-    return value
-  })()
+  const targetValue = request.nextUrl.searchParams.get("url")
   const token = getHuggingFaceToken()
 
   if (!targetValue || !isAllowedTarget(targetValue)) {
