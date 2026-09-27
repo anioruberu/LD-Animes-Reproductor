@@ -116,27 +116,12 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
 
         // Descargamos el archivo completo antes de entregarlo a PDF.js. Así no
         // dependemos de Range/redirects de servidores externos como Hugging Face.
-        const response = await fetch(getHuggingFaceProxyUrl(decodedPdfUrl), {
-          cache: 'no-store',
-        })
-        if (!response.ok) {
-          throw new Error(`PDF request failed: ${response.status}`)
-        }
-
-        const data = new Uint8Array(await response.arrayBuffer())
-        if (!data.length) {
-          throw new Error('The PDF response was empty')
-        }
-
-        const hasJbig2Images = (() => {
-          const marker = new Uint8Array([47, 74, 66, 73, 71, 50, 68, 101, 99, 111, 100, 101])
-          const hasMarker = data.some((_, index) => marker.every((byte, markerIndex) => data[index + markerIndex] === byte))
-          const fileName = decodeURIComponent(decodedPdfUrl.split('/').pop() ?? '').toLowerCase()
-          return hasMarker || fileName === '01.pdf'
-        })()
+        const pdfProxyUrl = getHuggingFaceProxyUrl(decodedPdfUrl)
+        const fileName = decodeURIComponent(decodedPdfUrl.split('/').pop() ?? '').toLowerCase()
+        const hasJbig2Images = fileName.includes('blanco') || fileName.includes('negro')
         highResolutionPdfRef.current = hasJbig2Images
         const compatibleOptions = {
-          data,
+          url: pdfProxyUrl,
           isOffscreenCanvasSupported: false,
           useWorkerFetch: false,
           useWasm: true,
@@ -145,7 +130,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
         }
 
         const loadWithFallback = async () => {
-          loadingTask = pdfjs.getDocument(hasJbig2Images ? compatibleOptions : { data })
+          loadingTask = pdfjs.getDocument(hasJbig2Images ? compatibleOptions : { url: pdfProxyUrl })
           try {
             return await loadingTask.promise
           } catch (initialError) {
@@ -438,7 +423,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
       ref={viewerRef}
       className={`relative min-h-screen overflow-hidden ${backgroundClass} touch-auto`}
     >
-      {dragonBallSaga && <div className="sr-only" aria-hidden="true"><DragonBallMusicPlayer initialPlaylist={dragonBallSaga} accent={theme === 'orange' ? 'orange' : 'blue'} autoStart showControls={false} /></div>}
+      {dragonBallSaga && <div className="sr-only" aria-hidden="true"><DragonBallMusicPlayer initialPlaylist={dragonBallSaga} accent={theme === 'orange' ? 'orange' : 'blue'} autoStart={totalPages > 0} showControls={false} /></div>}
       <div className="pointer-events-none fixed inset-x-0 top-0 z-30 px-3 pt-2 sm:px-5 sm:pt-3">
         <div className="mx-auto h-1.5 w-full max-w-3xl overflow-hidden rounded-full bg-slate-800/90 shadow-lg ring-1 ring-slate-700/70" role="progressbar" aria-label="Progreso de lectura" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
           <div className={`h-full rounded-full ${isOrange ? 'bg-orange-500' : 'bg-blue-500'} transition-[width] duration-200` } style={{ width: `${progress}%` }} />
