@@ -539,15 +539,15 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
       <div className="pointer-events-none fixed right-3 top-3 z-30 rounded-full border border-slate-600/80 bg-slate-900/90 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-md sm:right-5 sm:top-5 sm:px-4 sm:py-2 sm:text-sm">
         {currentPage} / {totalPages}
       </div>
-      <div ref={documentScrollRef} className={`h-screen w-full ${backgroundClass} ${readingMode === 'normal' ? 'overflow-y-auto pt-20' : 'flex items-center justify-center overflow-hidden'}`}>
+      <div ref={documentScrollRef} className={`h-screen w-full ${backgroundClass} ${readingMode === 'normal' || adsEnabled ? 'overflow-y-auto pt-20' : 'flex items-center justify-center overflow-hidden'}`}>
         {loading ? <div className="flex min-h-full w-full items-center justify-center text-gray-400">Cargando...</div> : (
           <div className="flex min-h-full w-full flex-col">
             {adsEnabled && (
               <div className="flex w-full shrink-0 items-start justify-center border-b border-slate-800/80 bg-slate-950 px-0" aria-label="Publicidad superior">
-                <div data-manga-ad className="aspect-[4/1] w-full overflow-hidden text-center md:w-[min(728px,100vw)]" />
+                <div data-manga-ad className="h-12 w-full max-w-xl overflow-hidden text-center" />
               </div>
             )}
-            <div className={readingMode === 'normal' ? 'mx-auto flex w-full max-w-4xl flex-col items-center gap-2 px-2 pb-8' : 'flex h-full w-full items-center justify-center'}>
+            <div className={readingMode === 'normal' ? 'mx-auto flex w-full max-w-4xl flex-col items-center gap-2 px-2 pb-8' : 'flex h-screen w-full shrink-0 items-center justify-center'}>
               {(readingMode === 'normal' ? Array.from({ length: totalPages }, (_, index) => index + 1) : [currentPage]).map((pageNumber) => (
                 <canvas
                   key={pageNumber}
@@ -559,7 +559,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
             </div>
             {adsEnabled && (
               <div className="flex w-full shrink-0 items-end justify-center border-t border-slate-800/80 bg-slate-950 px-0" aria-label="Publicidad inferior">
-                <div data-manga-ad data-manga-ad-position="bottom" className="aspect-[4/1] w-full overflow-hidden text-center md:w-[min(728px,100vw)]" />
+                <div data-manga-ad data-manga-ad-position="bottom" className="h-12 w-full max-w-xl overflow-hidden text-center" />
               </div>
             )}
           </div>
