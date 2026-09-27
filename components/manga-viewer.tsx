@@ -11,6 +11,7 @@ import * as pdfjs from 'pdfjs-dist'
 import { getHuggingFaceProxyUrl } from '@/lib/huggingface'
 import { readMangaProgress, saveMangaProgress } from '@/lib/manga-library'
 import { decodeVideoUrlParam, encodeVideoUrl } from '@/lib/url-codec'
+import { ViewerBannerAds } from '@/components/visor-banner-ads'
 
 // pdfjs-dist 6 publica el worker como módulo ES; usar .mjs evita el error de fake worker.
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`
@@ -19,9 +20,10 @@ interface MangaViewerProps {
   pdfUrl: string
   theme?: 'blue' | 'orange'
   downloadPath?: '/descargar' | '/descargar2'
+  showBannerAds?: boolean
 }
 
-export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar' }: MangaViewerProps) {
+export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar', showBannerAds = false }: MangaViewerProps) {
   const isOrange = theme === 'orange'
   const activeColor = isOrange ? 'bg-orange-500 hover:bg-orange-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
   const settingsActiveColor = isOrange
@@ -433,6 +435,7 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
       ref={viewerRef}
       className={`relative min-h-screen overflow-hidden ${backgroundClass} touch-auto`}
     >
+      {showBannerAds && <ViewerBannerAds />}
       <div className="pointer-events-none fixed inset-x-0 top-0 z-30 px-3 pt-2 sm:px-5 sm:pt-3">
         <div className="mx-auto h-1.5 w-full max-w-3xl overflow-hidden rounded-full bg-slate-800/90 shadow-lg ring-1 ring-slate-700/70" role="progressbar" aria-label="Progreso de lectura" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
           <div className={`h-full rounded-full ${isOrange ? 'bg-orange-500' : 'bg-blue-500'} transition-[width] duration-200` } style={{ width: `${progress}%` }} />
