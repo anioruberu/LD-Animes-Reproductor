@@ -123,10 +123,13 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
           throw new Error('The PDF response was empty')
         }
 
-          const hasJbig2Images = (() => {
-            const marker = new Uint8Array([47, 74, 66, 73, 71, 50, 68, 101, 99, 111, 100, 101])
-            return data.some((_, index) => marker.every((byte, markerIndex) => data[index + markerIndex] === byte))
-          })()
+        const hasJbig2Images = (() => {
+          const marker = new Uint8Array([47, 74, 66, 73, 71, 50, 68, 101, 99, 111, 100, 101])
+          const hasMarker = data.some((_, index) => marker.every((byte, markerIndex) => data[index + markerIndex] === byte))
+          const decodedPath = decodeURIComponent(decodedPdfUrl).toLowerCase()
+          const isBlackAndWhiteManga = decodedPath.includes('blanco y negro')
+          return hasMarker || isBlackAndWhiteManga
+        })()
         highResolutionPdfRef.current = hasJbig2Images
         const compatibleOptions = {
           data,
