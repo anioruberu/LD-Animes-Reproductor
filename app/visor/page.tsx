@@ -22,7 +22,7 @@ export default async function MangaViewerPage({ searchParams }: PageProps) {
 
   return (
     <Suspense fallback={<div className="min-h-screen bg-slate-900 flex items-center justify-center">Cargando...</div>}>
-      <MangaViewer pdfUrl={pdfUrl} theme="blue" />
+      <MangaViewer pdfUrl={pdfUrl} theme="blue" adsEnabled />
     </Suspense>
   )
 }
