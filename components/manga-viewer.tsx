@@ -547,12 +547,12 @@ export function MangaViewer({ pdfUrl, theme = 'blue', downloadPath = '/descargar
                 <div data-manga-ad className="h-12 w-full max-w-xl overflow-hidden text-center" />
               </div>
             )}
-            <div className={readingMode === 'normal' ? 'mx-auto flex w-full max-w-4xl flex-col items-center gap-2 px-2 pb-8' : adsEnabled ? 'flex h-[calc(100vh-6rem)] w-full shrink-0 items-center justify-center' : 'flex h-screen w-full shrink-0 items-center justify-center'}>
+            <div className={readingMode === 'normal' ? 'mx-auto flex w-full max-w-4xl flex-col items-center gap-2 px-2 pb-8' : adsEnabled ? 'flex h-auto min-h-0 w-full shrink-0 items-start justify-center' : 'flex h-screen w-full shrink-0 items-center justify-center'}>
               {(readingMode === 'normal' ? Array.from({ length: totalPages }, (_, index) => index + 1) : [currentPage]).map((pageNumber) => (
                 <canvas
                   key={pageNumber}
                   ref={(element) => { pageCanvasRefs.current[pageNumber] = element }}
-                  className={readingMode === 'normal' ? 'block h-auto w-full border-0 shadow-lg' : 'block h-full w-full object-contain border-0'}
+                  className={readingMode === 'normal' ? 'block h-auto w-full border-0 shadow-lg' : 'block h-auto max-h-full max-w-full w-auto object-contain border-0'}
                   style={readingMode === 'normal' ? { aspectRatio: '0.707 / 1' } : undefined}
                 />
               ))}
