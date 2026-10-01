@@ -49,12 +49,18 @@ function VideoPlayerContent() {
 
   useEffect(() => {
     const curlValue = searchParams.get("curl")
-    const sourceValue = curlValue ?? searchParams.get("url")
-    if (curlValue && !curlValue.startsWith("v1_")) {
+    const rawSourceValue = curlValue ?? searchParams.get("url")
+    const encodedSourceValue = rawSourceValue && !rawSourceValue.startsWith("v1_")
+      ? encodeVideoUrl(rawSourceValue)
+      : rawSourceValue
+
+    if (curlValue && encodedSourceValue !== curlValue) {
       const normalizedParams = new URLSearchParams(searchParams.toString())
-      normalizedParams.set("curl", encodeVideoUrl(curlValue))
+      normalizedParams.set("curl", encodedSourceValue)
       window.history.replaceState(null, "", `${window.location.pathname}?${normalizedParams.toString()}`)
     }
+
+    const sourceValue = encodedSourceValue
     const playlistItems = decodePlaylist(searchParams.get("playlist"))
     if (playlistItems.length) setPlaylist(playlistItems)
     const currentItem = playlistItems[playlistIndex]
