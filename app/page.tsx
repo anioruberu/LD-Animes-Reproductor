@@ -89,7 +89,7 @@ export default function HomePage() {
 
   const handleGoToPlayer = (playerType: 'blue' | 'orange' = 'blue') => {
     if (videoUrl) {
-      const encodedUrl = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
+      const encodedUrl = encodeURIComponent(encodeVideoUrl(videoUrl))
       const route = playerType === 'orange' ? '/reproductor2' : '/reproductor'
       const encodedSubtitles = subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ""
       router.push(`${route}?url=${encodedUrl}${encodedSubtitles}`)
@@ -98,7 +98,7 @@ export default function HomePage() {
 
   const handleDownload = () => {
     if (videoUrl) {
-      const encodedUrl = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
+      const encodedUrl = encodeURIComponent(encodeVideoUrl(videoUrl))
       router.push(`/${selectedPlayer === 'orange' ? 'verificar-descargar2' : 'verificar-descargar'}?url=${encodedUrl}`)
     }
   }
@@ -113,13 +113,13 @@ export default function HomePage() {
     if (!videoUrl) return ""
     const route = selectedPlayer === 'orange' ? '/reproductor2' : '/reproductor'
     const suffix = subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ""
-    const encodedVideo = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
+    const encodedVideo = encodeURIComponent(encodeVideoUrl(videoUrl))
     return `${window.location.origin}${route}?url=${encodedVideo}${suffix}`
   }
 
   const getEmbedCode = () => {
     if (!videoUrl) return ""
-    const encodedUrl = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
+    const encodedUrl = encodeURIComponent(encodeVideoUrl(videoUrl))
     const route = selectedPlayer === 'orange' ? '/reproductor2' : '/reproductor'
     const encodedSubtitles = subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ""
     const shareUrl = `${window.location.origin}${route}?url=${encodedUrl}${encodedSubtitles}`
@@ -287,7 +287,7 @@ export default function HomePage() {
               <div className="aspect-video bg-black relative">
                 <iframe
                   key={selectedPlayer}
-                  src={`${window.location.origin}${selectedPlayer === 'orange' ? '/reproductor2' : '/reproductor'}?url=${encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)}${subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ''}`}
+                  src={`${window.location.origin}${selectedPlayer === 'orange' ? '/reproductor2' : '/reproductor'}?url=${encodeURIComponent(encodeVideoUrl(videoUrl))}${subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ''}`}
                   className="w-full h-full"
                   allowFullScreen
                   title={selectedPlayer === 'blue' ? 'LD Animes' : 'GokuPlay -Reporductor'}
