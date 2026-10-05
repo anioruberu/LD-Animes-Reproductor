@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { ArrowLeft, Loader2, Play, Volume2 } from "lucide-react"
+import { Loader2, Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
 type VideoSource = { name: string; url: string }
 
@@ -28,28 +28,23 @@ export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props
   const [hasSelectedSource, setHasSelectedSource] = useState(false)
   const [isUnlocked, setIsUnlocked] = useState(false)
   const [isAdLoading, setIsAdLoading] = useState(false)
-  const [adNotice, setAdNotice] = useState<string | null>(null)
 
   useEffect(() => {
     setActiveIndex(0)
     setHasSelectedSource(false)
     setIsUnlocked(false)
-    setAdNotice(null)
   }, [sources])
 
   const activeSource = validSources[activeIndex]
 
   const startPlayback = async () => {
     setIsAdLoading(true)
-    setAdNotice(null)
     try {
       const response = await fetch("/api/vast-ad", { cache: "no-store" })
       const data = await response.json().catch(() => null)
-      if (response.ok && data?.mediaUrl) {
-        setAdNotice("Publicidad cargada. El video comenzará enseguida.")
-      }
+      void (response.ok && data?.mediaUrl)
     } catch {
-      setAdNotice("No se pudo cargar la publicidad; iniciando el video.")
+      // El reproductor continúa aunque la publicidad no esté disponible.
     } finally {
       setIsUnlocked(true)
       setIsAdLoading(false)
@@ -62,56 +57,48 @@ export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props
 
   return (
     <main className="flex min-h-screen flex-col bg-[#17100b] text-white">
-      <section className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 p-4 sm:p-6">
-        {!hasSelectedSource ? (
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between rounded-xl bg-orange-600 px-4 py-3">
-              <p className="flex items-center gap-2 text-lg font-bold"><Volume2 className="size-5" /> Selecciona un servidor</p>
-              <span className="text-sm text-orange-100">{validSources.length} opciones</span>
-            </div>
-            <div className="rounded-2xl border border-orange-400/30 bg-[#3a1d0d] p-3 shadow-xl">
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {validSources.map((source, index) => (
-                  <button
-                    key={`${source.url}-${index}`}
-                    type="button"
-                    onClick={() => { setActiveIndex(index); setHasSelectedSource(true); setIsUnlocked(false); setAdNotice(null) }}
-                    className="group flex min-h-28 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-orange-500 bg-[#160d08] p-3 text-center transition hover:bg-orange-950/60"
-                  >
-                    <span className="text-xs font-bold text-orange-300">{index + 1}</span>
-                    <span className="text-sm font-bold uppercase leading-tight tracking-wide">Servidor {index + 1}</span>
-                  </button>
-                ))}
-              </div>
+      {!hasSelectedSource ? (
+        <section className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 p-4 sm:p-6">
+          <div className="rounded-xl bg-orange-600 px-4 py-3 text-center text-lg font-bold">GokuPlay Reproductor</div>
+          <div className="rounded-2xl border border-orange-400/30 bg-[#3a1d0d] p-3 shadow-xl">
+            <h1 className="mb-3 text-center text-sm font-semibold text-orange-100">Selecciona un servidor</h1>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {validSources.map((source, index) => (
+                <button
+                  key={`${source.url}-${index}`}
+                  type="button"
+                  onClick={() => { setActiveIndex(index); setHasSelectedSource(true); setIsUnlocked(false); setAdNotice(null) }}
+                  className="group flex min-h-28 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-orange-500 bg-[#160d08] p-3 text-center transition hover:bg-orange-950/60"
+                >
+                  <span className="text-xs font-bold text-orange-300">{index + 1}</span>
+                  <span className="text-sm font-bold uppercase leading-tight tracking-wide">Servidor {index + 1}</span>
+                </button>
+              ))}
             </div>
           </div>
-        ) : (
-          <Button variant="outline" onClick={() => { setHasSelectedSource(false); setIsUnlocked(false) }} className="w-fit border-orange-400/60 text-orange-200 hover:bg-orange-950/60">
-            <ArrowLeft data-icon="inline-start" /> Cambiar servidor
-          </Button>
-        )}
-
-        {hasSelectedSource && <div className="rounded-xl bg-orange-600 px-4 py-3 text-center text-lg font-bold">GokuPlay Reproductor</div>}
-
-        <div className="overflow-hidden rounded-2xl border border-orange-300/30 bg-[#09090b] shadow-2xl">
-          <div className="relative aspect-video">
+        </section>
+      ) : (
+        <section className="flex min-h-screen w-full flex-1 items-center justify-center bg-black">
+          <div className="relative aspect-video w-full overflow-hidden bg-black">
             {!isUnlocked ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[radial-gradient(circle_at_center,rgba(249,115,22,0.22),transparent_55%)] p-5 text-center">
-                <p className="text-sm text-orange-200">Pulsa reproducir para cargar el video</p>
-                <Button onClick={startPlayback} disabled={isAdLoading} size="lg" className="rounded-full bg-orange-500 px-7 text-white hover:bg-orange-400">
-                  {isAdLoading ? <Loader2 data-icon="inline-start" className="animate-spin" /> : <Play data-icon="inline-start" className="fill-current" />}
-                  {isAdLoading ? "Cargando anuncio..." : "Reproducir"}
+              <div className="absolute inset-0 flex items-center justify-center bg-black">
+                <Button
+                  onClick={startPlayback}
+                  disabled={isAdLoading}
+                  aria-label={isAdLoading ? "Cargando reproductor" : "Reproducir video"}
+                  className="size-20 rounded-full bg-orange-500 p-0 text-white shadow-[0_0_40px_rgba(249,115,22,0.35)] hover:bg-orange-400"
+                >
+                  {isAdLoading ? <Loader2 className="size-8 animate-spin" /> : <Play className="ml-1 size-9 fill-current" />}
                 </Button>
               </div>
             ) : isDirectVideo(activeSource.url) ? (
               <video key={activeSource.url} className="h-full w-full" controls autoPlay playsInline src={activeSource.url} onError={() => setAdNotice("Este enlace no se pudo reproducir en el navegador.")} />
             ) : (
-              <iframe key={activeSource.url} className="h-full w-full" src={activeSource.url} title={activeSource.name} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />
+              <iframe key={activeSource.url} className="h-full w-full" src={activeSource.url} title="Reproductor de video" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />
             )}
           </div>
-        </div>
-        {adNotice && <p className="text-center text-xs text-orange-200" role="status">{adNotice}</p>}
-      </section>
+        </section>
+      )}
     </main>
   )
 }
