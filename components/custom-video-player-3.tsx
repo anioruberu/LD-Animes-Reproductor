@@ -64,7 +64,6 @@ export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props
     <main className="flex min-h-screen flex-col bg-[#17100b] text-white">
       <header className="border-b border-orange-300/20 bg-[#25140b] px-4 py-4 sm:px-6">
         <p className="text-xs font-bold uppercase tracking-[0.24em] text-orange-300">Reproductor 3</p>
-        <h1 className="mt-1 text-lg font-bold sm:text-xl">{title}</h1>
       </header>
 
       <section className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 p-4 sm:p-6">
