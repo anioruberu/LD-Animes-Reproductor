@@ -1,10 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Loader2, Play, Volume2 } from "lucide-react"
+import { ArrowLeft, Loader2, Play, Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-
 type VideoSource = { name: string; url: string }
 
 function getDomainName(url: string) {
@@ -27,12 +25,14 @@ function isDirectVideo(url: string) {
 export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props) {
   const validSources = useMemo(() => sources.filter((source) => source.url.trim()), [sources])
   const [activeIndex, setActiveIndex] = useState(0)
+  const [hasSelectedSource, setHasSelectedSource] = useState(false)
   const [isUnlocked, setIsUnlocked] = useState(false)
   const [isAdLoading, setIsAdLoading] = useState(false)
   const [adNotice, setAdNotice] = useState<string | null>(null)
 
   useEffect(() => {
     setActiveIndex(0)
+    setHasSelectedSource(false)
     setIsUnlocked(false)
     setAdNotice(null)
   }, [sources])
@@ -62,33 +62,36 @@ export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props
 
   return (
     <main className="flex min-h-screen flex-col bg-[#17100b] text-white">
-      <header className="border-b border-orange-300/20 bg-[#25140b] px-4 py-4 sm:px-6">
-        <p className="text-xs font-bold uppercase tracking-[0.24em] text-orange-300">Reproductor 3</p>
-      </header>
-
       <section className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 p-4 sm:p-6">
-        <div className="flex items-center justify-between rounded-xl bg-orange-600 px-4 py-3">
-          <p className="flex items-center gap-2 text-lg font-bold"><Volume2 className="size-5" /> Selecciona un servidor</p>
-          <span className="text-sm text-orange-100">{validSources.length} opciones</span>
-        </div>
-
-        <div className="rounded-2xl border border-orange-400/30 bg-[#3a1d0d] p-3 shadow-xl">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {validSources.map((source, index) => (
-              <button
-                key={`${source.url}-${index}`}
-                type="button"
-                onClick={() => { setActiveIndex(index); setIsUnlocked(false); setAdNotice(null) }}
-                className={cn("group flex min-h-28 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-orange-500 bg-[#160d08] p-3 text-center transition hover:bg-orange-950/60", index === activeIndex && "bg-orange-950/70 ring-2 ring-orange-300/60")}
-                aria-pressed={index === activeIndex}
-              >
-                <span className="text-xs font-bold text-orange-300">{index + 1}</span>
-                <span className="text-sm font-bold uppercase leading-tight tracking-wide">Servidor {index + 1}</span>
-                {index === activeIndex && <span className="text-[11px] text-orange-200">Seleccionado</span>}
-              </button>
-            ))}
+        {!hasSelectedSource ? (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between rounded-xl bg-orange-600 px-4 py-3">
+              <p className="flex items-center gap-2 text-lg font-bold"><Volume2 className="size-5" /> Selecciona un servidor</p>
+              <span className="text-sm text-orange-100">{validSources.length} opciones</span>
+            </div>
+            <div className="rounded-2xl border border-orange-400/30 bg-[#3a1d0d] p-3 shadow-xl">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {validSources.map((source, index) => (
+                  <button
+                    key={`${source.url}-${index}`}
+                    type="button"
+                    onClick={() => { setActiveIndex(index); setHasSelectedSource(true); setIsUnlocked(false); setAdNotice(null) }}
+                    className="group flex min-h-28 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-orange-500 bg-[#160d08] p-3 text-center transition hover:bg-orange-950/60"
+                  >
+                    <span className="text-xs font-bold text-orange-300">{index + 1}</span>
+                    <span className="text-sm font-bold uppercase leading-tight tracking-wide">Servidor {index + 1}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <Button variant="outline" onClick={() => { setHasSelectedSource(false); setIsUnlocked(false) }} className="w-fit border-orange-400/60 text-orange-200 hover:bg-orange-950/60">
+            <ArrowLeft data-icon="inline-start" /> Cambiar servidor
+          </Button>
+        )}
+
+        {hasSelectedSource && <div className="rounded-xl bg-orange-600 px-4 py-3 text-center text-lg font-bold">GokuPlay Reproductor</div>}
 
         <div className="overflow-hidden rounded-2xl border border-orange-300/30 bg-[#09090b] shadow-2xl">
           <div className="relative aspect-video">
