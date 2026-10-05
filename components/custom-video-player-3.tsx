@@ -22,6 +22,13 @@ function isDirectVideo(url: string) {
   return /\.(mp4|mkv|webm|ogg|mov|m3u8)(\?.*)?$/i.test(url) || url.includes("pixeldrain.com/api/file/")
 }
 
+function formatAdTime(time: number) {
+  if (!Number.isFinite(time) || time < 0) return "0:00"
+  const minutes = Math.floor(time / 60)
+  const seconds = Math.floor(time % 60)
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`
+}
+
 export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props) {
   const validSources = useMemo(() => sources.filter((source) => source.url.trim()), [sources])
   const [activeIndex, setActiveIndex] = useState(0)
@@ -30,6 +37,8 @@ export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props
   const [isAdLoading, setIsAdLoading] = useState(false)
   const [isAdPlaying, setIsAdPlaying] = useState(false)
   const [adMediaUrl, setAdMediaUrl] = useState<string | null>(null)
+  const [adCurrentTime, setAdCurrentTime] = useState(0)
+  const [adDuration, setAdDuration] = useState(0)
   const adVideoRef = useRef<HTMLVideoElement>(null)
   const adPlayedRef = useRef(false)
 
@@ -39,6 +48,8 @@ export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props
     setIsUnlocked(false)
     setIsAdPlaying(false)
     setAdMediaUrl(null)
+    setAdCurrentTime(0)
+    setAdDuration(0)
     adPlayedRef.current = false
   }, [sources])
 
@@ -109,9 +120,9 @@ export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props
                   onClick={startPlayback}
                   disabled={isAdLoading}
                   aria-label={isAdLoading ? "Cargando anuncio" : "Reproducir video"}
-                  className="size-16 rounded-full bg-orange-500 p-0 text-white shadow-[0_0_32px_rgba(249,115,22,0.4)] hover:bg-orange-400 sm:size-20"
+                  className="rounded-full bg-orange-600 p-4 text-white shadow-lg transition-all hover:scale-110 hover:bg-orange-700"
                 >
-                  {isAdLoading ? <Loader2 className="size-7 animate-spin sm:size-8" /> : <Play className="ml-1 size-8 fill-current sm:size-9" />}
+                  {isAdLoading ? <Loader2 className="size-8 animate-spin" /> : <Play className="ml-1 size-8" />}
                 </Button>
               </div>
             ) : (
@@ -125,10 +136,18 @@ export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props
                       autoPlay
                       playsInline
                       controls={false}
+                      onLoadedMetadata={(event) => setAdDuration(event.currentTarget.duration)}
+                      onTimeUpdate={(event) => setAdCurrentTime(event.currentTarget.currentTime)}
                       onEnded={finishAd}
                       onError={finishAd}
                     />
                     <span className="absolute left-3 top-3 rounded bg-black/70 px-2 py-1 text-xs text-white">Publicidad</span>
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent px-3 pb-3 pt-10">
+                      <div className="flex items-center justify-between text-xs font-medium text-white">
+                        <span>{formatAdTime(adCurrentTime)}</span>
+                        <span>{formatAdTime(adDuration)}</span>
+                      </div>
+                    </div>
                   </div>
                 )}
                 {isDirectVideo(activeSource.url) ? (
