@@ -31,13 +31,10 @@ export default function HomePage() {
       return
     }
 
-    const isPixelDrain = url.includes("pixeldrain.com")
-    const isHuggingFace = url.includes("huggingface.co") && (url.endsWith(".mkv") || url.endsWith(".mp4"))
-    const isZillaNetworks = url.includes("player.zilla-networks.com") || url.includes(".m3u8")
-    const isDirectVideo = url.match(/\.(mp4|mkv|webm|avi|mov)(\?.*)?$/i)
-
-    if (!isPixelDrain && !isHuggingFace && !isZillaNetworks && !isDirectVideo) {
-      setError("URL no compatible")
+    try {
+      new URL(url.trim())
+    } catch {
+      setError("Ingresa una URL válida")
       return
     }
 
@@ -59,7 +56,7 @@ export default function HomePage() {
     // router.push(`/r?url=${encodeURIComponent(url)}`)
   }
 
-  const [selectedPlayer, setSelectedPlayer] = useState<'blue' | 'orange'>('blue')
+  const [selectedPlayer, setSelectedPlayer] = useState<'blue' | 'orange' | 'player3'>('blue')
   const [playlistItems, setPlaylistItems] = useState<PlaylistItem[]>([])
   const [editingLibraryIndex, setEditingLibraryIndex] = useState<number | null>(null)
 
@@ -87,10 +84,10 @@ export default function HomePage() {
     router.push(`/${selectedPlayer === "orange" ? "visor2" : "visor"}?url=${encodeURIComponent(mangaUrl)}`)
   }
 
-  const handleGoToPlayer = (playerType: 'blue' | 'orange' = 'blue') => {
+  const handleGoToPlayer = (playerType: 'blue' | 'orange' | 'player3' = 'blue') => {
     if (videoUrl) {
       const encodedUrl = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
-      const route = playerType === 'orange' ? '/reproductor2' : '/reproductor'
+      const route = playerType === 'orange' ? '/reproductor2' : playerType === 'player3' ? '/reproductor3' : '/reproductor'
       const encodedSubtitles = subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ""
       router.push(`${route}?url=${encodedUrl}${encodedSubtitles}`)
     }
@@ -111,7 +108,7 @@ export default function HomePage() {
 
   const getShareUrl = () => {
     if (!videoUrl) return ""
-    const route = selectedPlayer === 'orange' ? '/reproductor2' : '/reproductor'
+    const route = selectedPlayer === 'orange' ? '/reproductor2' : selectedPlayer === 'player3' ? '/reproductor3' : '/reproductor'
     const suffix = subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ""
     const encodedVideo = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
     return `${window.location.origin}${route}?url=${encodedVideo}${suffix}`
@@ -120,7 +117,7 @@ export default function HomePage() {
   const getEmbedCode = () => {
     if (!videoUrl) return ""
     const encodedUrl = encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)
-    const route = selectedPlayer === 'orange' ? '/reproductor2' : '/reproductor'
+    const route = selectedPlayer === 'orange' ? '/reproductor2' : selectedPlayer === 'player3' ? '/reproductor3' : '/reproductor'
     const encodedSubtitles = subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ""
     const shareUrl = `${window.location.origin}${route}?url=${encodedUrl}${encodedSubtitles}`
     return `<iframe src="${shareUrl}" width="100%" height="600" frameborder="0" allowfullscreen style="border-radius: 8px; border: none;"></iframe>`
@@ -275,7 +272,7 @@ export default function HomePage() {
             }}>Agregar video actual</Button>
             <Button type="button" className="flex-1 bg-indigo-600 hover:bg-indigo-700" disabled={playlistItems.length === 0} onClick={() => {
               const playlist = encodePlaylist(playlistItems)
-              router.push(`${selectedPlayer === "orange" ? "/reproductor2" : "/reproductor"}?playlist=${encodeURIComponent(playlist)}`)
+              router.push(`${selectedPlayer === "orange" ? "/reproductor2" : selectedPlayer === "player3" ? "/reproductor3" : "/reproductor"}?playlist=${encodeURIComponent(playlist)}`)
             }}>Reproducir playlist ({playlistItems.length})</Button>
           </div>
         </section>
@@ -287,7 +284,7 @@ export default function HomePage() {
               <div className="aspect-video bg-black relative">
                 <iframe
                   key={selectedPlayer}
-                  src={`${window.location.origin}${selectedPlayer === 'orange' ? '/reproductor2' : '/reproductor'}?url=${encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)}${subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ''}`}
+                  src={`${window.location.origin}${selectedPlayer === 'orange' ? '/reproductor2' : selectedPlayer === 'player3' ? '/reproductor3' : '/reproductor'}?url=${encodeURIComponent(encodeUrl ? encodeVideoUrl(videoUrl) : videoUrl)}${subtitlesUrl.trim() ? `/sub=${encodeURIComponent(subtitlesUrl.trim())}` : ''}`}
                   className="w-full h-full"
                   allowFullScreen
                   title={selectedPlayer === 'blue' ? 'LD Animes' : 'GokuPlay -Reporductor'}
@@ -360,6 +357,16 @@ export default function HomePage() {
                       }`}
                     >
                       GokuPlay
+                    </Button>
+                    <Button
+                      onClick={() => setSelectedPlayer('player3')}
+                      className={`flex-1 py-2 rounded transition-colors text-xs font-semibold ${
+                        selectedPlayer === 'player3'
+                          ? 'bg-orange-500 hover:bg-orange-400 text-black'
+                          : 'bg-slate-700 hover:bg-slate-600 text-gray-300'
+                      }`}
+                    >
+                      Reproductor 3
                     </Button>
                   </div>
                   
