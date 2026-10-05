@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Loader2, Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
 type VideoSource = { name: string; url: string }
@@ -28,27 +28,50 @@ export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props
   const [hasSelectedSource, setHasSelectedSource] = useState(false)
   const [isUnlocked, setIsUnlocked] = useState(false)
   const [isAdLoading, setIsAdLoading] = useState(false)
+  const [isAdPlaying, setIsAdPlaying] = useState(false)
+  const [adMediaUrl, setAdMediaUrl] = useState<string | null>(null)
+  const adVideoRef = useRef<HTMLVideoElement>(null)
+  const adPlayedRef = useRef(false)
 
   useEffect(() => {
     setActiveIndex(0)
     setHasSelectedSource(false)
     setIsUnlocked(false)
+    setIsAdPlaying(false)
+    setAdMediaUrl(null)
+    adPlayedRef.current = false
   }, [sources])
 
   const activeSource = validSources[activeIndex]
 
   const startPlayback = async () => {
+    if (adPlayedRef.current) {
+      setIsUnlocked(true)
+      return
+    }
+
+    adPlayedRef.current = true
     setIsAdLoading(true)
     try {
       const response = await fetch("/api/vast-ad", { cache: "no-store" })
       const data = await response.json().catch(() => null)
-      void (response.ok && data?.mediaUrl)
+      if (response.ok && data?.mediaUrl) {
+        setAdMediaUrl(data.mediaUrl)
+        setIsAdPlaying(true)
+        return
+      }
     } catch {
       // El reproductor continúa aunque la publicidad no esté disponible.
     } finally {
-      setIsUnlocked(true)
       setIsAdLoading(false)
     }
+
+    setIsUnlocked(true)
+  }
+
+  const finishAd = () => {
+    setIsAdPlaying(false)
+    setIsUnlocked(true)
   }
 
   if (!activeSource) {
@@ -67,7 +90,7 @@ export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props
                 <button
                   key={`${source.url}-${index}`}
                   type="button"
-                  onClick={() => { setActiveIndex(index); setHasSelectedSource(true); setIsUnlocked(false); setAdNotice(null) }}
+                  onClick={() => { setActiveIndex(index); setHasSelectedSource(true); setIsUnlocked(false); setIsAdPlaying(false); setAdMediaUrl(null); adPlayedRef.current = false }}
                   className="group flex min-h-28 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-orange-500 bg-[#160d08] p-3 text-center transition hover:bg-orange-950/60"
                 >
                   <span className="text-xs font-bold text-orange-300">{index + 1}</span>
@@ -80,21 +103,40 @@ export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props
       ) : (
         <section className="flex min-h-screen w-full flex-1 items-center justify-center bg-black">
           <div className="relative aspect-video w-full overflow-hidden bg-black">
-            {!isUnlocked ? (
+            {!isUnlocked && !isAdPlaying ? (
               <div className="absolute inset-0 flex items-center justify-center bg-black">
                 <Button
                   onClick={startPlayback}
                   disabled={isAdLoading}
-                  aria-label={isAdLoading ? "Cargando reproductor" : "Reproducir video"}
-                  className="size-20 rounded-full bg-orange-500 p-0 text-white shadow-[0_0_40px_rgba(249,115,22,0.35)] hover:bg-orange-400"
+                  aria-label={isAdLoading ? "Cargando anuncio" : "Reproducir video"}
+                  className="size-16 rounded-full bg-orange-500 p-0 text-white shadow-[0_0_32px_rgba(249,115,22,0.4)] hover:bg-orange-400 sm:size-20"
                 >
-                  {isAdLoading ? <Loader2 className="size-8 animate-spin" /> : <Play className="ml-1 size-9 fill-current" />}
+                  {isAdLoading ? <Loader2 className="size-7 animate-spin sm:size-8" /> : <Play className="ml-1 size-8 fill-current sm:size-9" />}
                 </Button>
               </div>
-            ) : isDirectVideo(activeSource.url) ? (
-              <video key={activeSource.url} className="h-full w-full" controls autoPlay playsInline src={activeSource.url} onError={() => setAdNotice("Este enlace no se pudo reproducir en el navegador.")} />
             ) : (
-              <iframe key={activeSource.url} className="h-full w-full" src={activeSource.url} title="Reproductor de video" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />
+              <>
+                {isAdPlaying && (
+                  <div className="absolute inset-0 z-20 bg-black">
+                    <video
+                      ref={adVideoRef}
+                      src={adMediaUrl ?? undefined}
+                      className="h-full w-full object-contain"
+                      autoPlay
+                      playsInline
+                      controls={false}
+                      onEnded={finishAd}
+                      onError={finishAd}
+                    />
+                    <span className="absolute left-3 top-3 rounded bg-black/70 px-2 py-1 text-xs text-white">Publicidad</span>
+                  </div>
+                )}
+                {isDirectVideo(activeSource.url) ? (
+                  <video key={activeSource.url} className="h-full w-full" controls autoPlay={isUnlocked && !isAdPlaying} playsInline src={activeSource.url} />
+                ) : (
+                  <iframe key={activeSource.url} className="h-full w-full" src={activeSource.url} title="Reproductor de video" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />
+                )}
+              </>
             )}
           </div>
         </section>
