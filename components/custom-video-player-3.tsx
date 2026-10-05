@@ -7,6 +7,14 @@ import { cn } from "@/lib/utils"
 
 type VideoSource = { name: string; url: string }
 
+function getDomainName(url: string) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "")
+  } catch {
+    return "Servidor"
+  }
+}
+
 type Player3Props = {
   sources: VideoSource[]
   title?: string
