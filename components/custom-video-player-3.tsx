@@ -61,30 +61,44 @@ export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-black text-white">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3 sm:px-6">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-[0.2em] text-orange-400">Reproductor 3</p>
-          <h1 className="text-base font-semibold sm:text-lg">{title}</h1>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-zinc-400"><Volume2 className="size-4" /> Selecciona una opción</div>
+    <main className="flex min-h-screen flex-col bg-[#17100b] text-white">
+      <header className="border-b border-orange-300/20 bg-[#25140b] px-4 py-4 sm:px-6">
+        <p className="text-xs font-bold uppercase tracking-[0.24em] text-orange-300">Reproductor 3</p>
+        <h1 className="mt-1 text-lg font-bold sm:text-xl">{title}</h1>
       </header>
 
-      <section className="flex flex-1 flex-col items-center justify-center gap-5 p-3 sm:p-6">
-        <div className="w-full max-w-5xl overflow-hidden rounded-xl border border-white/10 bg-zinc-950 shadow-2xl shadow-orange-950/20">
-          <div className="relative aspect-video bg-black">
+      <section className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 p-4 sm:p-6">
+        <div className="flex items-center justify-between rounded-xl bg-orange-600 px-4 py-3">
+          <p className="flex items-center gap-2 text-lg font-bold"><Volume2 className="size-5" /> Selecciona un servidor</p>
+          <span className="text-sm text-orange-100">{validSources.length} opciones</span>
+        </div>
+
+        <div className="rounded-2xl border border-orange-400/30 bg-[#3a1d0d] p-3 shadow-xl">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {validSources.map((source, index) => (
+              <button
+                key={`${source.url}-${index}`}
+                type="button"
+                onClick={() => { setActiveIndex(index); setIsUnlocked(false); setAdNotice(null) }}
+                className={cn("group flex min-h-28 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-orange-500 bg-[#160d08] p-3 text-center transition hover:bg-orange-950/60", index === activeIndex && "bg-orange-950/70 ring-2 ring-orange-300/60")}
+                aria-pressed={index === activeIndex}
+              >
+                <span className="text-xs font-bold text-orange-300">{index + 1}</span>
+                <span className="text-sm font-bold uppercase leading-tight tracking-wide">Servidor {index + 1}</span>
+                {index === activeIndex && <span className="text-[11px] text-orange-200">Seleccionado</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-2xl border border-orange-300/30 bg-[#09090b] shadow-2xl">
+          <div className="relative aspect-video">
             {!isUnlocked ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-[radial-gradient(circle_at_center,rgba(249,115,22,0.16),transparent_55%)] p-6 text-center">
-                <div className="flex size-20 items-center justify-center rounded-full border border-orange-400/40 bg-orange-500/15 text-orange-300 shadow-lg shadow-orange-950/40 sm:size-24">
-                  <Play className="ml-1 size-9 fill-current sm:size-11" aria-hidden="true" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold sm:text-xl">Listo para reproducir</p>
-                  <p className="mt-1 text-sm text-zinc-400">Presiona Play para cargar el video</p>
-                </div>
-                <Button onClick={startPlayback} disabled={isAdLoading} className="bg-orange-500 text-black hover:bg-orange-400">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[radial-gradient(circle_at_center,rgba(249,115,22,0.22),transparent_55%)] p-5 text-center">
+                <p className="text-sm text-orange-200">Pulsa reproducir para cargar el video</p>
+                <Button onClick={startPlayback} disabled={isAdLoading} size="lg" className="rounded-full bg-orange-500 px-7 text-white hover:bg-orange-400">
                   {isAdLoading ? <Loader2 data-icon="inline-start" className="animate-spin" /> : <Play data-icon="inline-start" className="fill-current" />}
-                  {isAdLoading ? "Cargando..." : "Play"}
+                  {isAdLoading ? "Cargando anuncio..." : "Reproducir"}
                 </Button>
               </div>
             ) : isDirectVideo(activeSource.url) ? (
@@ -94,16 +108,7 @@ export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props
             )}
           </div>
         </div>
-
-        {adNotice && <p className="text-center text-xs text-zinc-400" role="status">{adNotice}</p>}
-
-        <nav className="flex w-full max-w-5xl flex-wrap gap-2" aria-label="Fuentes de video">
-          {validSources.map((source, index) => (
-            <Button key={`${source.url}-${index}`} variant={index === activeIndex ? "default" : "outline"} onClick={() => { setActiveIndex(index); setIsUnlocked(false); setAdNotice(null) }} className={cn("border-white/15", index === activeIndex && "bg-orange-500 text-black hover:bg-orange-400")}>
-              {source.name || `Opción ${index + 1}`}
-            </Button>
-          ))}
-        </nav>
+        {adNotice && <p className="text-center text-xs text-orange-200" role="status">{adNotice}</p>}
       </section>
     </main>
   )
