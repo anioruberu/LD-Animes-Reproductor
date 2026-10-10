@@ -44,7 +44,7 @@ export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props
 
   useEffect(() => {
     setActiveIndex(0)
-    setHasSelectedSource(false)
+    setHasSelectedSource(validSources.length === 1)
     setIsUnlocked(false)
     setIsAdPlaying(false)
     setAdMediaUrl(null)
