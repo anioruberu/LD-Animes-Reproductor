@@ -92,15 +92,15 @@ export function AdBlockerNotice() {
   const { isBlocked, isChecking, retry } = useAdBlocker()
   if (isChecking || !isBlocked) return null
   return (
-    <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm" role="alert" aria-live="assertive">
-      <div className="w-full max-w-sm rounded-2xl border border-amber-400/30 bg-slate-950/95 p-5 text-center text-white shadow-2xl">
-        <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-amber-400/15 text-amber-300">
-          <AlertTriangle className="size-6" aria-hidden="true" />
+    <div className="absolute inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/85 p-2 backdrop-blur-sm sm:p-4" role="alert" aria-live="assertive">
+      <div className="w-full max-w-sm max-h-full overflow-y-auto rounded-xl border border-amber-400/30 bg-slate-950/95 p-3 text-center text-white shadow-2xl sm:rounded-2xl sm:p-5">
+        <div className="mx-auto mb-2 flex size-9 items-center justify-center rounded-full bg-amber-400/15 text-amber-300 sm:mb-3 sm:size-12">
+          <AlertTriangle className="size-5 sm:size-6" aria-hidden="true" />
         </div>
-        <h2 className="text-lg font-semibold">Bloqueador de anuncios detectado</h2>
-        <p className="mt-2 text-sm leading-relaxed text-slate-300">Desactiva tu bloqueador para reproducir este contenido y apoyar el mantenimiento del sitio.</p>
-        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-400"><ShieldCheck className="size-4 text-emerald-400" aria-hidden="true" /> Tus datos permanecen protegidos.</div>
-        <Button variant="outline" className="mt-5 border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white" onClick={retry}>
+        <h2 className="text-sm font-semibold sm:text-lg">Bloqueador de anuncios detectado</h2>
+        <p className="mt-1.5 text-xs leading-relaxed text-slate-300 sm:mt-2 sm:text-sm">Desactiva tu bloqueador para reproducir este contenido y apoyar el mantenimiento del sitio.</p>
+        <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-slate-400 sm:mt-4 sm:gap-2 sm:text-xs"><ShieldCheck className="size-3.5 shrink-0 text-emerald-400 sm:size-4" aria-hidden="true" /> Tus datos permanecen protegidos.</div>
+        <Button variant="outline" size="sm" className="mt-3 border-white/20 bg-white/10 text-xs text-white hover:bg-white/20 hover:text-white sm:mt-5" onClick={retry}>
           <RefreshCw data-icon="inline-start" aria-hidden="true" /> Comprobar de nuevo
         </Button>
       </div>
