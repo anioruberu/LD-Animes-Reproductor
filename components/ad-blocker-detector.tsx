@@ -1,7 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
-import { AlertTriangle, Check, RefreshCw, ShieldCheck, X } from "lucide-react"
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react"
+import { AlertTriangle, RefreshCw, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -9,6 +9,10 @@ const VERIFIED_KEY = "ld-animes-adblock-verified"
 const VERIFICATION_TTL = 24 * 60 * 60 * 1000
 
 type DetectionResult = "blocked" | "clear"
+
+type AdBlockerContextValue = { isBlocked: boolean; isChecking: boolean; retry: () => void }
+const AdBlockerContext = createContext<AdBlockerContextValue>({ isBlocked: false, isChecking: true, retry: () => undefined })
+export const useAdBlocker = () => useContext(AdBlockerContext)
 
 function testAdElement(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -49,7 +53,7 @@ async function detectAdBlocker(): Promise<DetectionResult> {
   return elementBlocked && scriptBlocked ? "blocked" : "clear"
 }
 
-export function AdBlockerDetector() {
+export function AdBlockerDetector({ children }: { children?: ReactNode }) {
   const [isChecking, setIsChecking] = useState(true)
   const [isBlocked, setIsBlocked] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -89,41 +93,29 @@ export function AdBlockerDetector() {
     void runDetection(true)
   }
 
-  if (isChecking || !isBlocked) return null
-
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/85 p-4 backdrop-blur-md" role="alertdialog" aria-modal="true" aria-labelledby="adblock-title" aria-describedby="adblock-description">
-      <Card className="w-full max-w-md border-border/80 bg-background/95 shadow-2xl shadow-black/40">
-        <CardHeader className="items-center text-center">
-          <div className="mb-2 flex size-16 items-center justify-center rounded-full bg-amber-500/15 text-amber-500 ring-8 ring-amber-500/5">
-            <AlertTriangle className="size-8" aria-hidden="true" />
-          </div>
-          <CardTitle id="adblock-title" className="text-2xl">Bloqueador detectado</CardTitle>
-          <CardDescription id="adblock-description" className="max-w-sm text-base leading-relaxed">
-            Detectamos una extensión que bloquea los anuncios. Desactívala para apoyar el mantenimiento de este servicio gratuito.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
-            <ShieldCheck className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
-            <p>Tu privacidad y tus datos no se modifican. Solo necesitamos que permitas los anuncios de esta página.</p>
-          </div>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-3 sm:flex-row">
-          <Button variant="outline" className="w-full sm:flex-1" onClick={handleRetry} disabled={isRefreshing}>
-            <RefreshCw className={isRefreshing ? "animate-spin" : ""} data-icon="inline-start" aria-hidden="true" />
-            {isRefreshing ? "Comprobando..." : "Comprobar de nuevo"}
-          </Button>
-          <Button variant="ghost" className="w-full sm:flex-1" onClick={() => setIsBlocked(false)}>
-            <Check data-icon="inline-start" aria-hidden="true" />
-            Continuar
-          </Button>
-        </CardFooter>
-        <p className="flex items-center justify-center gap-1.5 px-6 pb-5 text-center text-xs text-muted-foreground">
-          <X className="size-3.5" aria-hidden="true" />
-          Puedes volver a activar tu bloqueador al terminar.
-        </p>
-      </Card>
+    <AdBlockerContext.Provider value={{ isBlocked, isChecking, retry: handleRetry }}>
+      {children}
+    </AdBlockerContext.Provider>
+  )
+}
+
+export function AdBlockerNotice() {
+  const { isBlocked, isChecking, retry } = useAdBlocker()
+  if (isChecking || !isBlocked) return null
+  return (
+    <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm" role="alert" aria-live="assertive">
+      <div className="w-full max-w-sm rounded-2xl border border-amber-400/30 bg-slate-950/95 p-5 text-center text-white shadow-2xl">
+        <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-amber-400/15 text-amber-300">
+          <AlertTriangle className="size-6" aria-hidden="true" />
+        </div>
+        <h2 className="text-lg font-semibold">Bloqueador de anuncios detectado</h2>
+        <p className="mt-2 text-sm leading-relaxed text-slate-300">Desactiva tu bloqueador para reproducir este contenido y apoyar el mantenimiento del sitio.</p>
+        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-400"><ShieldCheck className="size-4 text-emerald-400" aria-hidden="true" /> Tus datos permanecen protegidos.</div>
+        <Button variant="outline" className="mt-5 border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white" onClick={retry}>
+          <RefreshCw data-icon="inline-start" aria-hidden="true" /> Comprobar de nuevo
+        </Button>
+      </div>
     </div>
   )
 }

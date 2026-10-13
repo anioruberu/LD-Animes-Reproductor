@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import Hls from "hls.js"
+import { AdBlockerNotice } from "@/components/ad-blocker-detector"
 
 interface CustomVideoPlayerProps {
   src: string
@@ -895,6 +896,7 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
           : {}
       }
     >
+      <AdBlockerNotice />
       {isAdPlaying && (
         <div className="absolute inset-0 z-20 bg-black" onClick={(event) => event.stopPropagation()}>
           <video
@@ -951,7 +953,7 @@ export function CustomVideoPlayer({ src, title, onError, onLoad, onEnded, onPlay
         controls={false}
       >
         {subtitlesUrl && (
-          <track kind="subtitles" src={subtitlesUrl} srcLang="es" label="Español" default />
+          <track kind="subtitles" src={subtitlesUrl} srcLang="es" label="Espa��ol" default />
         )}
       </video>
 

@@ -36,8 +36,9 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          <main className="min-h-screen bg-slate-900">{children}</main>
-          <AdBlockerDetector />
+<AdBlockerDetector>
+<main className="min-h-screen bg-slate-900">{children}</main>
+</AdBlockerDetector>
         </ThemeProvider>
       </body>
     </html>
