@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { AdBlockerNotice } from "@/components/ad-blocker-detector"
 
 type DownloadGateProps = {
   onDownload: () => void | Promise<void>
@@ -54,7 +55,8 @@ export function DownloadGate({
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="relative flex flex-col gap-3">
+      <AdBlockerNotice />
       <Button
         onClick={handleDownloadClick}
         disabled={isLocked}
