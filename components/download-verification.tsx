@@ -4,6 +4,7 @@ import { useState } from "react"
 import ReCAPTCHA from "react-google-recaptcha"
 import { ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { AdBlockerNotice } from "@/components/ad-blocker-detector"
 
 type DownloadVerificationProps = {
   destination: string
@@ -48,7 +49,8 @@ export function DownloadVerification({ destination, accentClassName }: DownloadV
   }
 
   return (
-    <div className="space-y-5">
+    <div className="relative space-y-5">
+      <AdBlockerNotice />
       <div className="flex items-center gap-3 text-white">
         <ShieldCheck className="h-6 w-6 text-emerald-400" aria-hidden="true" />
         <div>
