@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Loader2, Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { AdBlockerNotice } from "@/components/ad-blocker-detector"
 type VideoSource = { name: string; url: string }
 
 function getDomainName(url: string) {
@@ -114,6 +115,7 @@ export function CustomVideoPlayer3({ sources, title = "GokuPlay" }: Player3Props
       ) : (
         <section className="flex min-h-screen w-full flex-1 items-center justify-center bg-black">
           <div className="relative aspect-video w-full overflow-hidden bg-black">
+            <AdBlockerNotice />
             {!isUnlocked && !isAdPlaying ? (
               <div className="absolute inset-0 flex items-center justify-center bg-black">
                 <Button
