@@ -5,9 +5,6 @@ import { AlertTriangle, RefreshCw, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
-const VERIFIED_KEY = "ld-animes-adblock-verified"
-const VERIFICATION_TTL = 24 * 60 * 60 * 1000
-
 type DetectionResult = "blocked" | "clear"
 
 type AdBlockerContextValue = { isBlocked: boolean; isChecking: boolean; retry: () => void }
@@ -50,7 +47,8 @@ function testAdScript(): Promise<boolean> {
 
 async function detectAdBlocker(): Promise<DetectionResult> {
   const [elementBlocked, scriptBlocked] = await Promise.all([testAdElement(), testAdScript()])
-  return elementBlocked && scriptBlocked ? "blocked" : "clear"
+  // Los bloqueadores pueden ocultar el señuelo o impedir la petición publicitaria.
+  return elementBlocked || scriptBlocked ? "blocked" : "clear"
 }
 
 export function AdBlockerDetector({ children }: { children?: ReactNode }) {
@@ -58,22 +56,13 @@ export function AdBlockerDetector({ children }: { children?: ReactNode }) {
   const [isBlocked, setIsBlocked] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const runDetection = useCallback(async (ignoreCache = false) => {
+  const runDetection = useCallback(async () => {
     setIsChecking(true)
-    if (!ignoreCache) {
-      const verifiedAt = Number(window.localStorage.getItem(VERIFIED_KEY))
-      if (verifiedAt && Date.now() - verifiedAt < VERIFICATION_TTL) {
-        setIsBlocked(false)
-        setIsChecking(false)
-        return
-      }
-    }
 
     try {
       const result = await detectAdBlocker()
       const blocked = result === "blocked"
       setIsBlocked(blocked)
-      if (!blocked) window.localStorage.setItem(VERIFIED_KEY, String(Date.now()))
     } catch {
       setIsBlocked(false)
     } finally {
@@ -88,9 +77,8 @@ export function AdBlockerDetector({ children }: { children?: ReactNode }) {
   }, [runDetection])
 
   const handleRetry = () => {
-    window.localStorage.removeItem(VERIFIED_KEY)
     setIsRefreshing(true)
-    void runDetection(true)
+    void runDetection()
   }
 
   return (
