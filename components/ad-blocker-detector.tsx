@@ -93,8 +93,8 @@ export function AdBlockerNotice({ variant = "player" }: { variant?: "player" | "
   if (isChecking || !isBlocked) return null
   const isDownload = variant === "download"
   return (
-    <div className={`absolute inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/90 p-3 backdrop-blur-md ${isDownload ? "sm:p-8 md:p-12" : "sm:p-4"}`} role="alert" aria-live="assertive">
-      <div className={`max-h-full w-full overflow-y-auto rounded-2xl border border-amber-400/30 bg-slate-950/98 text-center text-white shadow-2xl ${isDownload ? "max-w-2xl p-8 sm:p-12" : "max-w-sm p-3 sm:p-5"}`}>
+    <div className={`${isDownload ? "fixed" : "absolute"} inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/90 p-3 backdrop-blur-md ${isDownload ? "sm:p-8 md:p-12" : "sm:p-4"}`} role="alert" aria-live="assertive">
+      <div className={`max-h-[calc(100dvh-1.5rem)] w-full overflow-y-auto rounded-2xl border border-amber-400/30 bg-slate-950/98 text-center text-white shadow-2xl ${isDownload ? "max-w-2xl p-6 sm:max-h-[calc(100dvh-4rem)] sm:p-12" : "max-w-sm p-3 sm:p-5"}`}>
         <div className={`mx-auto flex items-center justify-center rounded-full bg-amber-400/15 text-amber-300 ${isDownload ? "mb-5 size-16 sm:mb-6 sm:size-20" : "mb-2 size-9 sm:mb-3 sm:size-12"}`}>
           <AlertTriangle className={isDownload ? "size-9 sm:size-10" : "size-5 sm:size-6"} aria-hidden="true" />
         </div>
