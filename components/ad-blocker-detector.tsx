@@ -88,12 +88,13 @@ export function AdBlockerDetector({ children }: { children?: ReactNode }) {
   )
 }
 
-export function AdBlockerNotice() {
+export function AdBlockerNotice({ variant = "player" }: { variant?: "player" | "download" }) {
   const { isBlocked, isChecking, retry } = useAdBlocker()
   if (isChecking || !isBlocked) return null
+  const isDownload = variant === "download"
   return (
-    <div className="absolute inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/85 p-2 backdrop-blur-sm sm:p-4" role="alert" aria-live="assertive">
-      <div className="w-full max-w-sm max-h-full overflow-y-auto rounded-xl border border-amber-400/30 bg-slate-950/95 p-3 text-center text-white shadow-2xl sm:rounded-2xl sm:p-5">
+    <div className={`absolute inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/90 p-3 backdrop-blur-md ${isDownload ? "sm:p-6" : "sm:p-4"}`} role="alert" aria-live="assertive">
+      <div className={`max-h-full w-full overflow-y-auto rounded-2xl border border-amber-400/30 bg-slate-950/98 text-center text-white shadow-2xl ${isDownload ? "max-w-lg p-6 sm:p-8" : "max-w-sm p-3 sm:p-5"}`}>
         <div className="mx-auto mb-2 flex size-9 items-center justify-center rounded-full bg-amber-400/15 text-amber-300 sm:mb-3 sm:size-12">
           <AlertTriangle className="size-5 sm:size-6" aria-hidden="true" />
         </div>

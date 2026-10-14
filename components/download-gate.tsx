@@ -56,7 +56,7 @@ export function DownloadGate({
 
   return (
     <div className="relative flex flex-col gap-3">
-      <AdBlockerNotice />
+      <AdBlockerNotice variant="download" />
       <Button
         onClick={handleDownloadClick}
         disabled={isLocked}
