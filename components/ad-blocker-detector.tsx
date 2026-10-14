@@ -93,15 +93,15 @@ export function AdBlockerNotice({ variant = "player" }: { variant?: "player" | "
   if (isChecking || !isBlocked) return null
   const isDownload = variant === "download"
   return (
-    <div className={`absolute inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/90 p-3 backdrop-blur-md ${isDownload ? "sm:p-6" : "sm:p-4"}`} role="alert" aria-live="assertive">
-      <div className={`max-h-full w-full overflow-y-auto rounded-2xl border border-amber-400/30 bg-slate-950/98 text-center text-white shadow-2xl ${isDownload ? "max-w-lg p-6 sm:p-8" : "max-w-sm p-3 sm:p-5"}`}>
-        <div className="mx-auto mb-2 flex size-9 items-center justify-center rounded-full bg-amber-400/15 text-amber-300 sm:mb-3 sm:size-12">
-          <AlertTriangle className="size-5 sm:size-6" aria-hidden="true" />
+    <div className={`absolute inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/90 p-3 backdrop-blur-md ${isDownload ? "sm:p-8 md:p-12" : "sm:p-4"}`} role="alert" aria-live="assertive">
+      <div className={`max-h-full w-full overflow-y-auto rounded-2xl border border-amber-400/30 bg-slate-950/98 text-center text-white shadow-2xl ${isDownload ? "max-w-2xl p-8 sm:p-12" : "max-w-sm p-3 sm:p-5"}`}>
+        <div className={`mx-auto flex items-center justify-center rounded-full bg-amber-400/15 text-amber-300 ${isDownload ? "mb-5 size-16 sm:mb-6 sm:size-20" : "mb-2 size-9 sm:mb-3 sm:size-12"}`}>
+          <AlertTriangle className={isDownload ? "size-9 sm:size-10" : "size-5 sm:size-6"} aria-hidden="true" />
         </div>
-        <h2 className="text-sm font-semibold sm:text-lg">Bloqueador de anuncios detectado</h2>
-        <p className="mt-1.5 text-xs leading-relaxed text-slate-300 sm:mt-2 sm:text-sm">Desactiva tu bloqueador para reproducir este contenido y apoyar el mantenimiento del sitio.</p>
-        <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-slate-400 sm:mt-4 sm:gap-2 sm:text-xs"><ShieldCheck className="size-3.5 shrink-0 text-emerald-400 sm:size-4" aria-hidden="true" /> Tus datos permanecen protegidos.</div>
-        <Button variant="outline" size="sm" className="mt-3 border-white/20 bg-white/10 text-xs text-white hover:bg-white/20 hover:text-white sm:mt-5" onClick={retry}>
+        <h2 className={isDownload ? "text-xl font-semibold sm:text-2xl" : "text-sm font-semibold sm:text-lg"}>Bloqueador de anuncios detectado</h2>
+        <p className={isDownload ? "mx-auto mt-3 max-w-xl text-base leading-relaxed text-slate-300 sm:mt-4 sm:text-lg" : "mt-1.5 text-xs leading-relaxed text-slate-300 sm:mt-2 sm:text-sm"}>Desactiva tu bloqueador para reproducir este contenido y apoyar el mantenimiento del sitio.</p>
+        <div className={isDownload ? "mt-5 flex items-center justify-center gap-2 text-sm text-slate-400 sm:mt-6 sm:text-base" : "mt-2 flex items-center justify-center gap-1.5 text-[10px] text-slate-400 sm:mt-4 sm:gap-2 sm:text-xs"}><ShieldCheck className={isDownload ? "size-5 shrink-0 text-emerald-400" : "size-3.5 shrink-0 text-emerald-400 sm:size-4"} aria-hidden="true" /> Tus datos permanecen protegidos.</div>
+        <Button variant="outline" size={isDownload ? "default" : "sm"} className={isDownload ? "mt-7 border-white/20 bg-white/10 px-6 text-sm text-white hover:bg-white/20 hover:text-white sm:mt-8" : "mt-3 border-white/20 bg-white/10 text-xs text-white hover:bg-white/20 hover:text-white sm:mt-5"} onClick={retry}>
           <RefreshCw data-icon="inline-start" aria-hidden="true" /> Comprobar de nuevo
         </Button>
       </div>
