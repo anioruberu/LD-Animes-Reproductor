@@ -50,7 +50,7 @@ export function DownloadVerification({ destination, accentClassName }: DownloadV
 
   return (
     <div className="relative space-y-5">
-      <AdBlockerNotice />
+      <AdBlockerNotice variant="download" />
       <div className="flex items-center gap-3 text-white">
         <ShieldCheck className="h-6 w-6 text-emerald-400" aria-hidden="true" />
         <div>
