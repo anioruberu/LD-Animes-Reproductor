@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react"
+import { usePathname } from "next/navigation"
 import { AlertTriangle, RefreshCw, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -52,11 +53,19 @@ async function detectAdBlocker(): Promise<DetectionResult> {
 }
 
 export function AdBlockerDetector({ children }: { children?: ReactNode }) {
-  const [isChecking, setIsChecking] = useState(true)
+  const pathname = usePathname()
+  const isShortRoute = pathname === "/r" || pathname === "/r2" || pathname === "/d" || pathname === "/d2"
+  const [isChecking, setIsChecking] = useState(!isShortRoute)
   const [isBlocked, setIsBlocked] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const runDetection = useCallback(async () => {
+    if (isShortRoute) {
+      setIsBlocked(false)
+      setIsChecking(false)
+      setIsRefreshing(false)
+      return
+    }
     setIsChecking(true)
 
     try {
@@ -69,12 +78,17 @@ export function AdBlockerDetector({ children }: { children?: ReactNode }) {
       setIsChecking(false)
       setIsRefreshing(false)
     }
-  }, [])
+  }, [isShortRoute])
 
   useEffect(() => {
+    if (isShortRoute) {
+      void runDetection()
+      return
+    }
+
     const timer = window.setTimeout(() => void runDetection(), 900)
     return () => window.clearTimeout(timer)
-  }, [runDetection])
+  }, [isShortRoute, runDetection])
 
   const handleRetry = () => {
     setIsRefreshing(true)
