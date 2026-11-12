@@ -1,6 +1,8 @@
 import { Suspense } from 'react'
 import { MangaViewer } from '@/components/manga-viewer'
 
+export const runtime = 'edge'
+
 interface PageProps {
   searchParams: Promise<{
     url?: string

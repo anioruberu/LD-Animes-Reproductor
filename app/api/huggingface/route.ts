@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { getHuggingFaceToken } from "@/lib/huggingface"
+import { getRequestContext } from "@cloudflare/next-on-pages"
 
 export const runtime = "edge"
 
@@ -22,7 +22,8 @@ function isHuggingFaceTarget(value: string) {
 
 export async function GET(request: NextRequest) {
   const targetValue = request.nextUrl.searchParams.get("url")
-  const token = getHuggingFaceToken()
+  const env = getRequestContext().env as { GokuPlay?: string; HF_TOKEN?: string }
+  const token = env.GokuPlay || env.HF_TOKEN || ""
 
   if (!targetValue || !isAllowedTarget(targetValue)) {
     return new Response("Not found", { status: 404 })
