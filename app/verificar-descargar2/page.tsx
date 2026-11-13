@@ -1,8 +1,6 @@
 import { DownloadVerification } from "@/components/download-verification"
 import { MonetagRouteAds } from "@/components/monetag-route-ads"
 
-export const runtime = "edge"
-
 export default async function VerifyDownloadTwoPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const params = await searchParams
   const query = new URLSearchParams()
