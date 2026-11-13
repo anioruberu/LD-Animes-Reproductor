@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server"
 
-export const runtime = "edge"
-
 const VAST_URL = "https://troubled-entertainment.com/d.mlFAzvdVGZNKvcZvG_Ux/ueum/9xuhZLUDltkUPFT/cs0fN/TDEGyHNZDdEXtJN/zVQ/1nMtTNIr0aN-Qz"
 
 export async function GET() {

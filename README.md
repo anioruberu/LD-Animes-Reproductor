@@ -50,15 +50,18 @@ Actualmente el proyecto tiene **dos integraciones publicitarias**:
 
 ## Configuración requerida
 
-Las variables de entorno se configuran desde Vercel:
+Para desarrollo local, copia `.env.example` a `.env.local` y sustituye los valores de ejemplo por tus credenciales. `.env.local` está excluido de Git.
 
-- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`
-- `RECAPTCHA_SECRET_KEY`
+En producción, configura estas variables en los ajustes del proveedor de despliegue (por ejemplo, Cloudflare Pages: **Settings → Variables and Secrets**):
+
+- `HF_TOKEN`: token privado de Hugging Face; solo lo usa `/api/huggingface` en el servidor.
+- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`: clave pública de reCAPTCHA; se envía al navegador.
+- `RECAPTCHA_SECRET_KEY`: clave secreta de reCAPTCHA; solo la usa `/api/validar-descarga` en el servidor.
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
 - `TURNSTILE_SECRET_KEY`
 - `NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL`
 
-No se deben guardar claves secretas en el código ni en el repositorio.
+No pongas `HF_TOKEN` ni `RECAPTCHA_SECRET_KEY` en componentes cliente, con prefijo `NEXT_PUBLIC_`, ni en archivos versionados. Los valores de `.env.example` son marcadores ficticios, no credenciales válidas.
 
 ## Desarrollo local
 

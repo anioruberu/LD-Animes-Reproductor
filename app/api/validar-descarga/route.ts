@@ -1,7 +1,4 @@
 import { NextResponse } from "next/server"
-import { getRequestContext } from "@cloudflare/next-on-pages"
-
-export const runtime = "edge"
 
 const RECAPTCHA_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify"
 const ALLOWED_DESTINATIONS = new Set(["/descargar", "/descargar2"])
@@ -18,8 +15,7 @@ function getAuthorizedDestination(destination: string) {
 }
 
 export async function POST(request: Request) {
-  const env = getRequestContext().env as { RECAPTCHA_SECRET_KEY?: string }
-  const secretKey = env.RECAPTCHA_SECRET_KEY
+  const secretKey = process.env.RECAPTCHA_SECRET_KEY
 
   if (!secretKey) {
     console.error("[v0] RECAPTCHA_SECRET_KEY no está configurada")
